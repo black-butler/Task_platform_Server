@@ -1,0 +1,11 @@
+[server]
+    MaxHeaderBytes    = "20KB"
+    ClientMaxBodySize = "120MB"
+
+[database]
+       Host         = "127.0.0.1"
+       Port         = "3306"
+       User         = "root"
+       Pass         = "root"
+       Name         = "task_platform"
+       Type         = "mysql"
