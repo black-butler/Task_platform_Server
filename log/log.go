@@ -16,3 +16,7 @@ func Sql_log() *glog.Logger {
 func Login_log() *glog.Logger {
 	return g.Log("Login_log").File("注册登录接口日志-{Ymd}.log")
 }
+
+func UploadFile_log() *glog.Logger {
+	return g.Log("UploadFile_log").File("文件上传日志-{Ymd}.log")
+}
