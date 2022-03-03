@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/grand"
 	"platform/Bean"
+	"platform/Config"
 	"platform/Data"
 	"platform/log"
 	"platform/utils"
@@ -91,7 +92,7 @@ func UploadFile(r *ghttp.Request) {
 	}
 
 	//保存文件
-	filename, err := file.Save("img/")
+	filename, err := file.Save(Config.Img_catalog)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "上传文件错误"))
 		log.UploadFile_log().Println("文件上传失败", err.Error())

@@ -20,3 +20,7 @@ func Login_log() *glog.Logger {
 func UploadFile_log() *glog.Logger {
 	return g.Log("UploadFile_log").File("文件上传日志-{Ymd}.log")
 }
+
+func File_read() *glog.Logger {
+	return g.Log("File_read").File("文件读取日志-{Ymd}.log")
+}

@@ -25,7 +25,7 @@ func Data_Add_user(number string, password string) error {
 		return errors.New("账号已存在")
 	}
 	//println(result)
-	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password}).Insert()
+	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password, "img": 1}).Insert()
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户", err.Error())
 		return errors.New("账号已存在")
@@ -53,4 +53,15 @@ func Data_Get_userid(userid string) (*Bean.User, error) {
 		return nil, errors.New("账号不存在")
 	}
 	return user, nil
+}
+
+//更新用户头像id
+func Update_User_touxiangid(user *Bean.User, touxiangid int) error {
+	_, err := g.DB().Model("users").Data(g.Map{"img": touxiangid}).Where("id", user.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("更新用户头像失败", err.Error())
+		return errors.New("更新用户头像失败")
+	}
+
+	return nil
 }

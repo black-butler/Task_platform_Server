@@ -1,4 +1,7 @@
 package Config
 
 //session key常量
-var Session_user = "session_user"
+const Session_user = "session_user"
+
+//图片文件存储地址
+const Img_catalog = "img/"
