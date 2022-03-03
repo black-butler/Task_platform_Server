@@ -2,9 +2,11 @@ package Data
 
 import (
 	"errors"
+	"github.com/gogf/gf/database/gdb"
 	"github.com/gogf/gf/frame/g"
 	"platform/Bean"
 	"platform/log"
+	"strconv"
 	"sync"
 )
 
@@ -56,7 +58,7 @@ func Data_Get_userid(userid string) (*Bean.User, error) {
 }
 
 //更新用户头像id
-func Update_User_touxiangid(user *Bean.User, touxiangid int) error {
+func Data_Update_User_touxiangid(user *Bean.User, touxiangid int) error {
 	_, err := g.DB().Model("users").Data(g.Map{"img": touxiangid}).Where("id", user.Id).Update()
 	if err != nil {
 		log.Sql_log().Line().Println("更新用户头像失败", err.Error())
@@ -64,4 +66,13 @@ func Update_User_touxiangid(user *Bean.User, touxiangid int) error {
 	}
 
 	return nil
+}
+
+//添加用户余额
+func Data_Add_User_money(userid string, money int) {
+	_, err := g.DB().Model("users").Data(g.Map{"money": gdb.Raw("money+" + strconv.Itoa(money))}).Where("id", userid).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
+		return
+	}
 }

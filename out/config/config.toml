@@ -1,6 +1,6 @@
 [server]
     MaxHeaderBytes    = "20KB"
-    ClientMaxBodySize = "120MB"
+    ClientMaxBodySize = "5MB"
 
 [database]
        Host         = "127.0.0.1"

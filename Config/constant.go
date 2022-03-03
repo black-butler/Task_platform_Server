@@ -5,3 +5,6 @@ const Session_user = "session_user"
 
 //图片文件存储地址
 const Img_catalog = "img/"
+
+//支付宝回调地址
+const AliPay_NotifyURL = "http://d62cc1312e150293.natapp.cc:64651/Alipay/NotifyURL"

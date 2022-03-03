@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
+	"platform/Data"
 	"platform/Tripartite_api"
 	"platform/log"
 	"platform/utils"
@@ -22,7 +23,7 @@ func Alipay_NotifyURL(r *ghttp.Request) {
 	var noti, _ = utils.GetTradeNotification(r)
 	if noti == nil {
 		log.Alipay_log().Println("解析返回值异常", r.URL.String(), "data:", r.GetBodyString())
-		r.Response.Write("success") //确认收到通知
+		//r.Response.Write("success") //确认收到通知
 		return
 	}
 	fmt.Println("交易状态为:", noti.TradeStatus)
@@ -39,6 +40,13 @@ func Alipay_NotifyURL(r *ghttp.Request) {
 	}
 
 	//支付成功逻辑....
+
+	//获取用户订单
+	userid, money, err := Data.Data_get_number_dingdan(noti.OutTradeNo)
+	//添加用户余额
+	Data.Data_Add_User_money(userid, money)
+	//改变用户订单为支付成功
+	Data.Data_Update_status(noti.OutTradeNo)
 
 	r.Response.Write("success") //确认收到通知
 }

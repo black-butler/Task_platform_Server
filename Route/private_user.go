@@ -13,6 +13,7 @@ import (
 	"platform/Route/Filter"
 	"platform/log"
 	"platform/utils"
+	"strconv"
 	"strings"
 )
 
@@ -38,10 +39,17 @@ func UserInfo(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
+	new_user, err := Data.Data_Get_userid(strconv.Itoa(user.Id))
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取个人信息错误"))
+		return
+	}
+	r.Session.Set(Config.Session_user, new_user)
+
 	json := gjson.New(nil)
 	json.Set("code", 0)
-	json.Set("number", user.Number)
-	json.Set("id", user.Id)
+	json.Set("number", new_user.Number)
+	json.Set("id", new_user.Id)
 
 	r.Response.WriteJson(json)
 }
@@ -52,12 +60,12 @@ func update_touxiang(r *ghttp.Request) {
 	user := session_user.(*Bean.User)
 
 	touxiangid := r.GetInt("touxiangid")
-	err := Data.Check_fileid(touxiangid)
+	_, err := Data.Data_Get_Img_filename(touxiangid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "查找头像失败"))
 		return
 	}
-	err = Data.Update_User_touxiangid(user, touxiangid)
+	err = Data.Data_Update_User_touxiangid(user, touxiangid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "查找头像失败"))
 		return
@@ -71,7 +79,7 @@ func Get_touxiang(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	filename, err := Data.Get_Img_filename(user.Img)
+	filename, err := Data.Data_Get_Img_filename(user.Img)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "查找文件失败"))
 		return

@@ -20,7 +20,7 @@ func Data_Save_file(user *Bean.User, filename string) (int, error) {
 }
 
 //通过id获取图片名
-func Get_Img_filename(id int) (string, error) {
+func Data_Get_Img_filename(id int) (string, error) {
 
 	result, err := g.DB().Model("imgs").Data(g.Map{"id": id}).One()
 	if err != nil {
@@ -40,16 +40,16 @@ func Get_Img_filename(id int) (string, error) {
 }
 
 //查找是否存在此文件
-func Check_fileid(fileid int) error {
-	result, err := g.DB().Model("imgs").Where("id", fileid).One()
-	if err != nil {
-		log.Sql_log().Line().Println("查找是否存在此文件 查找失败", err.Error())
-		return errors.New("文件不存在")
-	}
-	if len(result) == 0 {
-		log.Sql_log().Line().Println("查找是否存在此文件 查找失败")
-		return errors.New("文件不存在")
-	}
-
-	return nil
-}
+//func Check_fileid(fileid int) error {
+//	result, err := g.DB().Model("imgs").Where("id", fileid).One()
+//	if err != nil {
+//		log.Sql_log().Line().Println("查找是否存在此文件 查找失败", err.Error())
+//		return errors.New("文件不存在")
+//	}
+//	if len(result) == 0 {
+//		log.Sql_log().Line().Println("查找是否存在此文件 查找失败")
+//		return errors.New("文件不存在")
+//	}
+//
+//	return nil
+//}
