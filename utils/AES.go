@@ -12,6 +12,9 @@ var Number_AES = []byte("#HvL%$o0oNNoOZnk#o2qbqCeQB1iXeIR")
 //Token 登录
 var Token_AES = []byte("v1DHRTidZgpLvrzjjjn4RYUnvHQNxC15")
 
+//向量
+var iv = []byte("mhhgqokeixmsjplq")
+
 func PKCS7Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
@@ -32,7 +35,7 @@ func AesEncrypt(origData, key []byte) ([]byte, error) {
 	}
 	blockSize := block.BlockSize()
 	origData = PKCS7Padding(origData, blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
+	blockMode := cipher.NewCBCEncrypter(block, iv)
 	crypted := make([]byte, len(origData))
 	blockMode.CryptBlocks(crypted, origData)
 	return crypted, nil
@@ -44,8 +47,8 @@ func AesDecrypt(crypted, key []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
+	//blockSize := block.BlockSize()
+	blockMode := cipher.NewCBCDecrypter(block, iv)
 	origData := make([]byte, len(crypted))
 	blockMode.CryptBlocks(origData, crypted)
 	origData = PKCS7UnPadding(origData)

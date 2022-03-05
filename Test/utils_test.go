@@ -9,14 +9,18 @@ import (
 
 func Test_utils(t *testing.T) {
 
-	zhi := "JASHGAHDJASBG"
+	zhi := "123123"
 	jiami, err := utils.AesEncrypt([]byte(zhi), utils.Number_AES)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("加密后: %s\n", base64.StdEncoding.EncodeToString(jiami))
 
-	origin, err := utils.AesDecrypt([]byte("kP9ly8nvzhBtnPxbfM3rwA=="), utils.Number_AES)
+	jiema, err := base64.StdEncoding.DecodeString("AhhTnr5qMRYprFrV/hfpZw==")
+	if err != nil {
+		panic(err)
+	}
+	origin, err := utils.AesDecrypt(jiema, utils.Number_AES)
 	if err != nil {
 		panic(err)
 	}

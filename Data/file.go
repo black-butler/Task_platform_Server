@@ -22,7 +22,7 @@ func Data_Save_file(user *Bean.User, filename string) (int, error) {
 //通过id获取图片名
 func Data_Get_Img_filename(id int) (string, error) {
 
-	result, err := g.DB().Model("imgs").Data(g.Map{"id": id}).One()
+	result, err := g.DB().Model("imgs").Where("id", id).One()
 	if err != nil {
 		log.Sql_log().Line().Println("读取文件名失败", err.Error())
 		return "", errors.New("读取文件名失败")

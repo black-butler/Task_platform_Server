@@ -5,6 +5,8 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
+	"github.com/gogf/guuid"
+	"github.com/smartwalle/alipay/v3"
 	"io/ioutil"
 	"os"
 	"platform/Bean"
@@ -32,6 +34,8 @@ func init() {
 	group.GET("/User_fadan", User_fadan)
 	//个人接了哪些单子
 	group.GET("/User_jiedan", User_jiedan)
+	//用户充值
+	group.GET("/user_top_up", user_top_up)
 }
 
 //用户信息接口
@@ -50,6 +54,7 @@ func UserInfo(r *ghttp.Request) {
 	json.Set("code", 0)
 	json.Set("number", new_user.Number)
 	json.Set("id", new_user.Id)
+	json.Set("money", new_user.Money)
 
 	r.Response.WriteJson(json)
 }
@@ -71,6 +76,7 @@ func update_touxiang(r *ghttp.Request) {
 		return
 	}
 
+	r.Response.WriteJson(utils.Get_response_json(0, "更换头像成功"))
 }
 
 //用户获取头像接口
@@ -113,9 +119,48 @@ func Get_touxiang(r *ghttp.Request) {
 
 //个人发布的单子
 func User_fadan(r *ghttp.Request) {
-
 }
 
 //个人接了哪些单子
 func User_jiedan(r *ghttp.Request) {
+}
+
+//用户充值
+func user_top_up(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	money := r.GetInt("money")
+	if money <= 0 || money > 500 {
+		r.Response.WriteJson(utils.Get_response_json(1, "请输入大于0小于500的金额"))
+		return
+	}
+
+	order_number := guuid.New().String()
+
+	var p = alipay.TradeAppPay{}
+	p.NotifyURL = Config.AliPay_NotifyURL
+	//p.ReturnURL = "http://xxx"
+	p.Subject = "账户充值"
+	p.OutTradeNo = order_number
+	p.TotalAmount = strconv.Itoa(money)
+
+	url, err := utils.Client.TradeAppPay(p)
+	if err != nil {
+		log.Alipay_log().Line().Println("创建支付宝订单失败", err.Error())
+		r.Response.WriteJson(utils.Get_response_json(1, "创建订单失败"))
+		return
+	}
+
+	//添加订单
+	err = Data.Data_pay_Create_dingdan(user, order_number, money)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "创建订单失败"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", url)
+	r.Response.WriteJson(json)
 }
