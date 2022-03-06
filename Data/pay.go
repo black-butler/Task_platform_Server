@@ -20,31 +20,37 @@ func Data_pay_Create_dingdan(user *Bean.User, order_number string, money int) er
 }
 
 //根据订单号获取订单
-func Data_get_number_dingdan(order_number string) (string, int, error) {
+func Data_get_number_dingdan(order_number string) (string, int, int, error) {
 	result, err := g.DB().Model("order_form").Where("order_number", order_number).One()
 	if err != nil {
 		log.Sql_log().Line().Println("根据订单号获取订单失败", err.Error())
-		return "", 0, errors.New("根据订单号获取订单")
+		return "", 0, 0, errors.New("根据订单号获取订单")
 	}
 
 	if len(result) <= 0 {
 		log.Sql_log().Line().Println("根据订单号获取订单失败，订单号为空，查询的订单号:", order_number)
-		return "", 0, errors.New("根据订单号获取订单")
+		return "", 0, 0, errors.New("根据订单号获取订单")
 	}
 
 	zhi_userid, ok := result["userid"]
 	if ok == false {
 		log.Sql_log().Line().Println("根据订单号获取订单失败，订单号为空，查询的订单号:", order_number)
-		return "", 0, errors.New("根据订单号获取订单")
+		return "", 0, 0, errors.New("根据订单号获取订单")
 	}
 
 	zhi_money, ok := result["money"]
 	if ok == false {
 		log.Sql_log().Line().Println("根据订单号获取订单失败，订单号为空，查询的订单号:", order_number)
-		return "", 0, errors.New("根据订单号获取订单")
+		return "", 0, 0, errors.New("根据订单号获取订单")
 	}
 
-	return zhi_userid.String(), zhi_money.Int(), nil
+	zhi_status, ok := result["status"]
+	if ok == false {
+		log.Sql_log().Line().Println("根据订单号获取订单失败，订单号为空，查询的订单号:", order_number)
+		return "", 0, 0, errors.New("根据订单号获取订单")
+	}
+
+	return zhi_userid.String(), zhi_money.Int(), zhi_status.Int(), nil
 }
 
 //改变订单成功状态
