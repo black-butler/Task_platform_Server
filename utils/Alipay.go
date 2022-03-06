@@ -20,9 +20,9 @@ func init() {
 		panic(err)
 	}
 
-	Client.LoadAppPublicCertFromFile("appCertPublicKey_2021002194600072.crt") // 加载应用公钥证书
-	Client.LoadAliPayRootCertFromFile("alipayRootCert.crt")                   // 加载支付宝根证书
-	Client.LoadAliPayPublicCertFromFile("alipayCertPublicKey_RSA2.crt")       // 加载支付宝公钥证书
+	Client.LoadAppPublicCertFromFile("config/appCertPublicKey_2021002194600072.crt") // 加载应用公钥证书
+	Client.LoadAliPayRootCertFromFile("config/alipayRootCert.crt")                   // 加载支付宝根证书
+	Client.LoadAliPayPublicCertFromFile("config/alipayCertPublicKey_RSA2.crt")       // 加载支付宝公钥证书
 }
 
 //支付宝验签

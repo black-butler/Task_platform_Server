@@ -16,6 +16,6 @@ func main() {
 
 	g := g.Server()
 	g.SetHTTPSPort(9090)
-	g.EnableHTTPS("server.crt", "server.key")
+	g.EnableHTTPS("config/server.crt", "config/server.key")
 	g.Run()
 }
