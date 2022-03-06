@@ -15,6 +15,7 @@ func main() {
 	g.Log().SetPath(dir + "\\glog")
 
 	g := g.Server()
-	g.SetPort(9090)
+	g.SetHTTPSPort(9090)
+	g.EnableHTTPS("server.crt", "server.key")
 	g.Run()
 }

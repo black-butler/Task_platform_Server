@@ -55,6 +55,8 @@ func UserInfo(r *ghttp.Request) {
 	json.Set("number", new_user.Number)
 	json.Set("id", new_user.Id)
 	json.Set("money", new_user.Money)
+	json.Set("alipay_number", new_user.Alipay_number)
+	json.Set("freeze_money", new_user.Freeze_money)
 
 	r.Response.WriteJson(json)
 }
