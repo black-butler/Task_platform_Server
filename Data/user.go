@@ -57,6 +57,16 @@ func Data_Get_userid(userid string) (*Bean.User, error) {
 	return user, nil
 }
 
+//刷新用户
+func Data_refre_userid(user *Bean.User) error {
+	err := g.DB().Model("users").Where("id", user.Id).Struct(user)
+	if err != nil {
+		log.Sql_log().Line().Println("查找用户", err.Error())
+		return errors.New("账号不存在")
+	}
+	return nil
+}
+
 //更新用户头像id
 func Data_Update_User_touxiangid(user *Bean.User, touxiangid int) error {
 	_, err := g.DB().Model("users").Data(g.Map{"img": touxiangid}).Where("id", user.Id).Update()
@@ -75,4 +85,15 @@ func Data_Add_User_money(userid string, money int) {
 		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
 		return
 	}
+}
+
+//扣除用户余额到冻结余额
+func Data_transfer_money(user *Bean.User, money int) error {
+	_, err := g.DB().Model("users").Data(g.Map{"money": gdb.Raw("money-" + strconv.Itoa(money)), "freeze_money": gdb.Raw("freeze_money+" + strconv.Itoa(money))}).Where("id", user.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("扣除用户余额到冻结余额失败", err.Error())
+		return errors.New("用户余额操作失败")
+	}
+
+	return nil
 }

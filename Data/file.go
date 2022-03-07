@@ -39,17 +39,17 @@ func Data_Get_Img_filename(id int) (string, error) {
 	}
 }
 
-//查找是否存在此文件
-//func Check_fileid(fileid int) error {
-//	result, err := g.DB().Model("imgs").Where("id", fileid).One()
-//	if err != nil {
-//		log.Sql_log().Line().Println("查找是否存在此文件 查找失败", err.Error())
-//		return errors.New("文件不存在")
-//	}
-//	if len(result) == 0 {
-//		log.Sql_log().Line().Println("查找是否存在此文件 查找失败")
-//		return errors.New("文件不存在")
-//	}
-//
-//	return nil
-//}
+//检查图片id是否存在
+func Data_Check_img_ids(ids []string) (bool, error) {
+
+	result, err := g.DB().Model("imgs").Where("id", g.Slice{ids}).All()
+	if err != nil {
+		return false, errors.New("查找图片失败")
+	}
+
+	if len(result) == len(ids) {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}

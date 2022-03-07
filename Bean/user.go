@@ -1,6 +1,10 @@
 package Bean
 
+import "sync"
+
 type User struct {
+	Mutex sync.Mutex //用户锁
+
 	Id            int
 	Number        string
 	Password      string

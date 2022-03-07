@@ -25,17 +25,17 @@ func init() {
 	group.Middleware(Filter.Middleware)
 
 	//个人信息
-	group.GET("/UserInfo", UserInfo)
+	group.POST("/UserInfo", UserInfo)
 	//个人更换信息
-	group.GET("/update_userinfo", update_touxiang)
+	group.POST("/update_userinfo", update_touxiang)
 	//个人获取头像
-	group.GET("/get_touxiang", Get_touxiang)
+	group.POST("/get_touxiang", Get_touxiang)
 	//个人发布的单子
-	group.GET("/User_fadan", User_fadan)
+	group.POST("/User_fadan", User_fadan)
 	//个人接了哪些单子
-	group.GET("/User_jiedan", User_jiedan)
+	group.POST("/User_jiedan", User_jiedan)
 	//用户充值
-	group.GET("/user_top_up", user_top_up)
+	group.POST("/user_top_up", user_top_up)
 }
 
 //用户信息接口
@@ -43,21 +43,19 @@ func UserInfo(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	new_user, err := Data.Data_Get_userid(strconv.Itoa(user.Id))
-	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, "获取个人信息错误"))
-		return
-	}
-	r.Session.Set(Config.Session_user, new_user)
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
+
+	Data.Data_refre_userid(user)
 
 	json := gjson.New(nil)
 	json.Set("code", 0)
-	json.Set("number", new_user.Number)
-	json.Set("id", new_user.Id)
-	json.Set("money", new_user.Money)
-	json.Set("alipay_number", new_user.Alipay_number)
-	json.Set("freeze_money", new_user.Freeze_money)
-	json.Set("admin", new_user.Admin)
+	json.Set("number", user.Number)
+	json.Set("id", user.Id)                       //用户id
+	json.Set("money", user.Money)                 //用户余额
+	json.Set("alipay_number", user.Alipay_number) //用户绑定的支付宝
+	json.Set("freeze_money", user.Freeze_money)   //冻结余额
+	json.Set("admin", user.Admin)                 //是否是管理员0 不是 1是
 
 	r.Response.WriteJson(json)
 }
