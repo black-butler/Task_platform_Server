@@ -132,6 +132,7 @@ func UploadFile_Img(r *ghttp.Request) {
 		r.Response.WriteJson(utils.Get_response_json(1, "文件不存在"))
 		return
 	}
+
 	//检查文件后缀
 	houzhui := strings.Split(file.FileHeader.Filename, ".")
 	if len(houzhui) != 2 {

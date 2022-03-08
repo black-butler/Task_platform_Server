@@ -29,7 +29,7 @@ func init() {
 	//个人更换信息
 	group.POST("/update_userinfo", update_touxiang)
 	//个人获取头像
-	group.POST("/get_touxiang", Get_touxiang)
+	group.GET("/get_touxiang", Get_touxiang)
 	//个人发布的单子
 	group.POST("/User_fadan", User_fadan)
 	//个人接了哪些单子

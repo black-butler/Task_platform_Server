@@ -10,7 +10,7 @@ import (
 var Number_AES = []byte("#HvL%$o0oNNoOZnk#o2qbqCeQB1iXeIR")
 
 //Token 登录
-var Token_AES = []byte("v1DHRTidZgpLvrzjjjn4RYUnvHQNxC15")
+var Token_AES = []byte("v1DHRTidZgpLvrzjjjn4RYUnvHQNxC18")
 
 //向量
 var iv = []byte("mhhgqokeixmsjplq")
