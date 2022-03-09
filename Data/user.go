@@ -27,7 +27,7 @@ func Data_Add_user(number string, password string) error {
 		return errors.New("账号已存在")
 	}
 	//println(result)
-	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password, "img": 1}).Insert()
+	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password, "img": 1, "alipay_number": ""}).Insert()
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户", err.Error())
 		return errors.New("账号已存在")
