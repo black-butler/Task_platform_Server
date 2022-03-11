@@ -34,6 +34,9 @@ func init() {
 	group.POST("/submit", submit)
 	//接任务
 	group.POST("/receive_task", receive_task)
+	//下架任务
+
+	//
 
 	//上传图片文件
 	group.POST("/UploadFile", UploadFile_Img)
