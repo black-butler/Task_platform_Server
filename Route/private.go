@@ -36,8 +36,6 @@ func init() {
 	group.POST("/receive_task", receive_task)
 	//下架任务
 
-	//
-
 	//上传图片文件
 	group.POST("/UploadFile", UploadFile_Img)
 	//获取图片
