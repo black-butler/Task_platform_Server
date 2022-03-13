@@ -56,28 +56,75 @@ func announcement(r *ghttp.Request) {
 }
 
 //单子列表
-func order_list(r *ghttp.Request) {}
+func order_list(r *ghttp.Request) {
+	result, err := Data.Data_get_all_task()
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", result)
+	r.Response.WriteJson(json)
+}
 
 //单子详情页接口
-func detail(r *ghttp.Request) {}
+func detail(r *ghttp.Request) {
+	id := r.GetInt("id")
+	record, err := Data.Data_get_task(id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", record)
+	r.Response.WriteJson(json)
+}
 
 //提交单子接口
 func submit(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
+	title := r.GetString("title")        //任务标题
+	TaskCount := r.GetInt("TaskCount")   //任务数量
+	price := r.GetInt("price")           //任务单价
 	Time_limit := r.GetInt("Time_limit") //任务限时
-	body := r.GetString("body")
-	img := r.GetString("imgs")
-	one_money := r.GetInt("one_money") //单个金额
-	sum := r.GetInt("sum")             //任务总数
+	endDate := r.GetInt64("endDate")     //超时时间戳
+	body := r.GetString("body")          //任务完成流程
+	proof := r.GetString("proof")        //任务需要提交的资料
+	img := r.GetString("imgs")           //多个图片
 
 	if Time_limit < 10 || Time_limit > 1000 {
 		r.Response.WriteJson(utils.Get_response_json(1, "任务限时不能小于10分钟或大于1000分钟"))
 		return
 	}
-	if one_money <= 0 || sum <= 0 || body == "" || utf8.RuneCountInString(body) <= 10 {
-		r.Response.WriteJson(utils.Get_response_json(1, "任务描述不能少于10个"))
+	if utf8.RuneCountInString(title) < 5 || utf8.RuneCountInString(title) > 15 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务标题不能大于15小于5个字符"))
+		return
+	}
+	if TaskCount < 1 || TaskCount > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务数量不能小于1大于1000"))
+		return
+	}
+	if price < 1 || price > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务单价不能小于1大于1000"))
+		return
+	}
+	now := time.Unix(endDate, 0)
+	if time.Now().Unix() >= now.Unix() {
+		r.Response.WriteJson(utils.Get_response_json(1, "时间错误"))
+		return
+	}
+	if utf8.RuneCountInString(body) <= 10 || utf8.RuneCountInString(body) > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务流程不能小于10大于1000"))
+		return
+	}
+	if utf8.RuneCountInString(proof) <= 10 || utf8.RuneCountInString(proof) > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务需要提交的资料不能小于10大于1000"))
 		return
 	}
 
@@ -88,7 +135,7 @@ func submit(r *ghttp.Request) {
 	Data.Data_refre_userid(user)
 
 	//任务总金额
-	Zong_money := one_money * sum
+	Zong_money := price * TaskCount
 	//判断金额是否足够
 	if Zong_money > user.Money {
 		r.Response.WriteJson(utils.Get_response_json(1, "用户余额不足，请先充值"))
@@ -101,6 +148,14 @@ func submit(r *ghttp.Request) {
 		r.Response.WriteJson(utils.Get_response_json(1, "图片过多"))
 		return
 	}
+k:
+	for i, v := range imgs {
+		if v == "" {
+			imgs = append(imgs[:i], imgs[i+1:]...)
+			goto k
+		}
+	}
+
 	status, err := Data.Data_Check_img_ids(imgs)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "图片提交失败"))
@@ -112,7 +167,7 @@ func submit(r *ghttp.Request) {
 	}
 
 	//提交任务
-	err = Data.Data_add_task(user, body, img, one_money, sum)
+	err = Data.Data_add_task(user, title, body, proof, img, TaskCount, price, Time_limit, now.Format(utils.Time_Format))
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "提交任务失败"))
 		return
@@ -153,7 +208,7 @@ func receive_task(r *ghttp.Request) {
 	}
 
 	finish_time := time.Now().Add(time.Minute * time.Duration(task.Time_limit))
-	err = Data.Data_Set_work_order(user, task.Id, finish_time.Format(utils.Time_Format))
+	err = Data.Data_Set_work_order(user, task.Id, task.Userid, finish_time.Format(utils.Time_Format))
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "接任务失败"))
 		return

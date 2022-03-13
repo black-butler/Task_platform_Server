@@ -2,8 +2,10 @@ package Data
 
 import (
 	"errors"
+	"github.com/gogf/gf/database/gdb"
 	"github.com/gogf/gf/frame/g"
 	"platform/Bean"
+	"platform/constant"
 	"platform/log"
 	"platform/utils"
 	"strconv"
@@ -11,8 +13,8 @@ import (
 )
 
 //添加任务
-func Data_add_task(user *Bean.User, body string, img string, one_money int, sum int) error {
-	_, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "body": body, "imgs": img, "one_money": one_money, "sum": sum, "time": time.Now().Format(utils.Time_Format)}).Insert()
+func Data_add_task(user *Bean.User, title string, body string, audit string, img string, one_money int, sum int, time_limit int, endDate string) error {
+	_, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "title": title, "body": body, "audit": audit, "imgs": img, "one_money": one_money, "sum": sum, "time_limit": time_limit, "endDate": endDate, "time": time.Now().Format(utils.Time_Format)}).Insert()
 	if err != nil {
 		log.Sql_log().Line().Println("添加任务", err.Error())
 		return errors.New("添加任务失败")
@@ -40,8 +42,8 @@ func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 }
 
 //添加任务接单记录
-func Data_Set_work_order(user *Bean.User, taskid int, finish_time string) error {
-	_, err := g.DB().Model("work_order").Data(g.Map{"userid": user.Id, "taskid": taskid, "create_time": time.Now().Format(utils.Time_Format), "finish_time": finish_time}).Insert()
+func Data_Set_work_order(user *Bean.User, taskid int, taskUserid int, finish_time string) error {
+	_, err := g.DB().Model("work_order").Data(g.Map{"userid": user.Id, "taskid": taskid, "task_userid": taskUserid, "create_time": time.Now().Format(utils.Time_Format), "finish_time": finish_time}).Insert()
 	if err != nil {
 		log.Sql_log().Line().Println("添加任务接单记录失败", err.Error())
 		return errors.New("添加任务接单记录失败")
@@ -67,4 +69,24 @@ func Data_Check_user_receive_task(user *Bean.User, taskid int) (*Bean.Work_order
 	Work_order.Task = task
 
 	return Work_order, nil
+}
+
+//获取当前所有任务
+func Data_get_all_task() (gdb.Result, error) {
+	result, err := g.DB().Model("tasks").Where("status", constant.Zhengchang).All()
+	if err != nil {
+		log.Sql_log().Line().Println("获取当前所有任务", err.Error())
+		return nil, errors.New("获取推荐任务失败")
+	}
+	return result, nil
+}
+
+//根据id获取单个任务
+func Data_get_task(id int) (gdb.Record, error) {
+	Record, err := g.DB().Model("tasks").Where("status", constant.Zhengchang).Where("id", id).One()
+	if err != nil {
+		log.Sql_log().Line().Println("获取当前所有任务", err.Error())
+		return nil, errors.New("查看当前任务失败")
+	}
+	return Record, nil
 }

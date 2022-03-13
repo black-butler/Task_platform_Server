@@ -131,6 +131,12 @@ func user_top_up(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
+	float_money := r.GetFloat64("money")
+	if float_money != float64(int(float_money)) {
+		r.Response.WriteJson(utils.Get_response_json(1, "只能充值整数"))
+		return
+	}
+
 	money := r.GetInt("money")
 	if money <= 0 || money > 500 {
 		r.Response.WriteJson(utils.Get_response_json(1, "请输入大于0小于500的金额"))
