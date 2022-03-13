@@ -71,6 +71,9 @@ func order_list(r *ghttp.Request) {
 
 //单子详情页接口
 func detail(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
 	id := r.GetInt("id")
 	record, err := Data.Data_get_task(id)
 	if err != nil {
@@ -79,6 +82,19 @@ func detail(r *ghttp.Request) {
 	}
 
 	json := gjson.New(nil)
+	if user.Id == record["userid"].Int() { //判断查看单子详情页的是否是自己
+		json.Set("is_me", true)
+	} else {
+		json.Set("is_me", false)
+	}
+
+	count, err := Data.Data_get_task_dan_count(id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+	json.Set("count", count) //接单用户数量
+
 	json.Set("code", "0")
 	json.Set("body", record)
 	r.Response.WriteJson(json)

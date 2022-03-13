@@ -90,3 +90,14 @@ func Data_get_task(id int) (gdb.Record, error) {
 	}
 	return Record, nil
 }
+
+//获取某个任务的所有接单数量
+func Data_get_task_dan_count(taskid int) (int, error) {
+	reslut, err := g.DB().Model("work_order").Where("taskid", taskid).WhereNotIn("status", g.Slice{constant.Chaoshi}).All()
+	if err != nil {
+		log.Sql_log().Line().Println("获取某个任务的所有接单数量", err.Error())
+		return 0, errors.New("查看当前任务失败")
+	}
+
+	return len(reslut), nil
+}

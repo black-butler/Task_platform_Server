@@ -2,6 +2,14 @@ package constant
 
 //任务状态
 const (
-	Zhengchang = 0
-	Xiajia     = 1
+	Zhengchang = 0 //正常
+	Xiajia     = 1 //下架
+)
+
+//接单状态
+const (
+	Weiwancheng = 0 //未完成
+	Yiwancheng  = 1 //已完成
+	Yidakuan    = 2 //已打款
+	Chaoshi     = 3 //超时
 )
