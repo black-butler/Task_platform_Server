@@ -201,6 +201,15 @@ func receive_task(r *ghttp.Request) {
 		return
 	}
 
+	//锁当前任务
+	task_suo, err := utils.Get_task_suo(task.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+	task_suo.Lock()
+	defer task_suo.Unlock()
+
 	word_task, err := Data.Data_Check_user_receive_task(user, task.Id)
 	if word_task != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "已接过此任务"))

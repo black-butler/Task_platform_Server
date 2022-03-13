@@ -24,3 +24,7 @@ func UploadFile_log() *glog.Logger {
 func File_read() *glog.Logger {
 	return g.Log("File_read").File("文件读取日志-{Ymd}.log")
 }
+
+func File_gcache_log() *glog.Logger {
+	return g.Log("File_gcache_log").File("gcache缓存日志-{Ymd}.log")
+}
