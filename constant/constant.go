@@ -6,6 +6,8 @@ const (
 	Xiajia     = 1 //下架
 )
 
+var Task_status_map = map[int]string{Zhengchang: "正常", Xiajia: "下架"}
+
 //接单状态
 const (
 	Weiwancheng = 0 //未完成

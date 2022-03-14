@@ -12,6 +12,7 @@ import (
 	"platform/Config"
 	"platform/Data"
 	"platform/Route/Filter"
+	"platform/constant"
 	"platform/log"
 	"platform/utils"
 	"strings"
@@ -35,11 +36,16 @@ func init() {
 	//接任务
 	group.POST("/receive_task", receive_task)
 	//下架任务
+	group.POST("/soldTask", soldTask)
+	//提交资料
+	group.POST("/subdatum", subdatum)
+	//查看自己和任务对应的工单
+	group.POST("/Vieworder", Vieworder)
 
 	//上传图片文件
 	group.POST("/UploadFile", UploadFile_Img)
 	//获取图片
-	group.POST("/Get_Img", Get_Img)
+	group.GET("/Get_Img", Get_Img)
 }
 
 //首页内容
@@ -183,7 +189,7 @@ k:
 	}
 
 	//提交任务
-	err = Data.Data_add_task(user, title, body, proof, img, TaskCount, price, Time_limit, now.Format(utils.Time_Format))
+	id, err := Data.Data_add_task(user, title, body, proof, img, TaskCount, price, Time_limit, now.Format(utils.Time_Format))
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "提交任务失败"))
 		return
@@ -197,8 +203,9 @@ k:
 	}
 
 	json := gjson.New(nil)
-	json.Set("code", 1)
+	json.Set("code", 0)
 	json.Set("body", "提交成功")
+	json.Set("id", id)
 	r.Response.WriteJson(json)
 }
 
@@ -214,6 +221,11 @@ func receive_task(r *ghttp.Request) {
 	task, err := Data.Data_Get_task_id(taskid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+		return
+	}
+
+	if user.Id == task.Userid {
+		r.Response.WriteJson(utils.Get_response_json(1, "不能自己接自己任务"))
 		return
 	}
 
@@ -233,13 +245,157 @@ func receive_task(r *ghttp.Request) {
 	}
 
 	finish_time := time.Now().Add(time.Minute * time.Duration(task.Time_limit))
-	err = Data.Data_Set_work_order(user, task.Id, task.Userid, finish_time.Format(utils.Time_Format))
+	wordid, err := Data.Data_Set_work_order(user, task.Id, task.Userid, finish_time.Format(utils.Time_Format))
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "接任务失败"))
+		return
+	}
+
+	//添加一条消息
+	err = Data.Data_Add_message(user, wordid, task, "我已经接了这个任务，正在完成中...", "")
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "接任务失败"))
 		return
 	}
 
 	r.Response.WriteJson(utils.Get_response_json(0, "接任务成功，请在指定时间内完成"))
+}
+
+//下架任务
+func soldTask(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
+
+	taskid := r.GetInt("taskid")
+	task, err := Data.Data_Get_task_id(taskid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "操作该任务失败"))
+		return
+	}
+
+	if task.Userid != user.Id {
+		r.Response.WriteJson(utils.Get_response_json(1, "操作该任务失败"))
+		return
+	}
+
+	err = Data.Data_update_task_status(task, constant.Xiajia)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", "更新状态"+constant.Task_status_map[constant.Xiajia]+"成功")
+	r.Response.WriteJson(json)
+}
+
+//查看自己和任务对应的工单
+func Vieworder(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	taskid := r.GetInt("id")
+	//添加提交资料
+	task, err := Data.Data_Get_task_id(taskid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+		return
+	}
+
+	//获取工单
+	Work_order, err := Data.Data_Check_user_receive_task(user, task.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	result_message, err := Data.Data_get_all_message(Work_order)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", result_message)
+	r.Response.WriteJson(json)
+}
+
+//用户提交资料
+func subdatum(r *ghttp.Request) {
+
+	body := r.GetString("body")
+	img := r.GetString("imgs")
+	taskid := r.GetInt("taskid")
+
+	if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务提交的文字资料不能小于10大于1000"))
+		return
+	}
+
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
+
+	//校验图片
+	imgs := strings.Split(img, ",")
+	if len(imgs) > 100 {
+		r.Response.WriteJson(utils.Get_response_json(1, "图片过多"))
+		return
+	}
+k:
+	for i, v := range imgs {
+		if v == "" {
+			imgs = append(imgs[:i], imgs[i+1:]...)
+			goto k
+		}
+	}
+
+	status, err := Data.Data_Check_img_ids(imgs)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "图片提交失败"))
+		return
+	}
+	if status == false {
+		r.Response.WriteJson(utils.Get_response_json(1, "图片提交失败"))
+		return
+	}
+
+	//添加提交资料
+	task, err := Data.Data_Get_task_id(taskid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+		return
+	}
+
+	if task.Userid == user.Id {
+		r.Response.WriteJson(utils.Get_response_json(1, "不能自己提交消息"))
+		return
+	}
+
+	//获取工单
+	Work_order, err := Data.Data_Check_user_receive_task(user, task.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	err = Data.Data_Add_message(user, int64(Work_order.Id), task, body, img)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", "提交成功")
+	r.Response.WriteJson(json)
 }
 
 //上传图片
@@ -253,13 +409,6 @@ func UploadFile_Img(r *ghttp.Request) {
 		return
 	}
 
-	//检查文件后缀
-	houzhui := strings.Split(file.FileHeader.Filename, ".")
-	if len(houzhui) != 2 {
-		r.Response.WriteJson(utils.Get_response_json(1, "文件错误"))
-		return
-	}
-	file.FileHeader.Filename = grand.S(15) + "." + houzhui[1]
 	//检查文件格式
 	f, err := file.Open()
 	if err != nil {
@@ -270,10 +419,19 @@ func UploadFile_Img(r *ghttp.Request) {
 	f.Read(bytes)
 
 	var file_type = utils.GetFileType(bytes)
-	if !utils.Check_if_img(file_type) {
+	ok, zhi := utils.Check_if_img(file_type)
+	if ok == false {
 		r.Response.WriteJson(utils.Get_response_json(1, "文件错误"))
 		return
 	}
+
+	//检查文件后缀
+	//houzhui := strings.Split(file.FileHeader.Filename, ".")
+	//if len(houzhui) != 2 {
+	//	r.Response.WriteJson(utils.Get_response_json(1, "文件错误"))
+	//	return
+	//}
+	file.FileHeader.Filename = grand.S(15) + "." + zhi
 
 	//保存文件
 	filename, err := file.Save(Config.Img_catalog)

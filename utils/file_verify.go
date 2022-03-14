@@ -107,9 +107,12 @@ func GetFileType(fSrc []byte) string {
 }
 
 //检查文件是否是图片
-func Check_if_img(typez string) bool {
-	if typez == "jpg" || typez == "png" {
-		return true
+func Check_if_img(typez string) (bool, string) {
+	if typez == "jpg" {
+		return true, "jpg"
 	}
-	return false
+	if typez == "png" {
+		return true, "png"
+	}
+	return false, ""
 }

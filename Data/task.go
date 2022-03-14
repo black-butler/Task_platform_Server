@@ -13,13 +13,13 @@ import (
 )
 
 //添加任务
-func Data_add_task(user *Bean.User, title string, body string, audit string, img string, one_money int, sum int, time_limit int, endDate string) error {
-	_, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "title": title, "body": body, "audit": audit, "imgs": img, "one_money": one_money, "sum": sum, "time_limit": time_limit, "endDate": endDate, "time": time.Now().Format(utils.Time_Format)}).Insert()
+func Data_add_task(user *Bean.User, title string, body string, audit string, img string, one_money int, sum int, time_limit int, endDate string) (int64, error) {
+	id, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "title": title, "body": body, "audit": audit, "imgs": img, "one_money": one_money, "sum": sum, "time_limit": time_limit, "endDate": endDate, "time": time.Now().Format(utils.Time_Format)}).InsertAndGetId()
 	if err != nil {
 		log.Sql_log().Line().Println("添加任务", err.Error())
-		return errors.New("添加任务失败")
+		return 0, errors.New("添加任务失败")
 	}
-	return nil
+	return id, nil
 }
 
 //根据id获取某个任务
@@ -42,13 +42,13 @@ func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 }
 
 //添加任务接单记录
-func Data_Set_work_order(user *Bean.User, taskid int, taskUserid int, finish_time string) error {
-	_, err := g.DB().Model("work_order").Data(g.Map{"userid": user.Id, "taskid": taskid, "task_userid": taskUserid, "create_time": time.Now().Format(utils.Time_Format), "finish_time": finish_time}).Insert()
+func Data_Set_work_order(user *Bean.User, taskid int, taskUserid int, finish_time string) (int64, error) {
+	id, err := g.DB().Model("work_order").Data(g.Map{"userid": user.Id, "taskid": taskid, "task_userid": taskUserid, "create_time": time.Now().Format(utils.Time_Format), "finish_time": finish_time}).InsertAndGetId()
 	if err != nil {
 		log.Sql_log().Line().Println("添加任务接单记录失败", err.Error())
-		return errors.New("添加任务接单记录失败")
+		return 0, errors.New("添加任务接单记录失败")
 	}
-	return nil
+	return id, nil
 }
 
 //获取某个用户对某个任务的接单记录
@@ -81,7 +81,7 @@ func Data_get_all_task() (gdb.Result, error) {
 	return result, nil
 }
 
-//根据id获取单个任务
+//根据id获取单个任务 正常状态的任务
 func Data_get_task(id int) (gdb.Record, error) {
 	Record, err := g.DB().Model("tasks").Where("status", constant.Zhengchang).Where("id", id).One()
 	if err != nil {
@@ -100,4 +100,34 @@ func Data_get_task_dan_count(taskid int) (int, error) {
 	}
 
 	return len(reslut), nil
+}
+
+//提交任务资料
+func Data_Add_message(user *Bean.User, work_orderid int64, task *Bean.Task, body string, imgs string) error {
+	_, err := g.DB().Model("message").Data(g.Map{"userid": user.Id, "workid": work_orderid, "taskid": task.Id, "taskuserid": task.Userid, "body": body, "imgs": imgs, "time": time.Now().Format(utils.Time_Format)}).Insert()
+	if err != nil {
+		log.Sql_log().Line().Println("提交任务资料", err.Error())
+		return errors.New("提交任务资料")
+	}
+	return nil
+}
+
+//获取某个工单对应的全部消息
+func Data_get_all_message(Work_order *Bean.Work_order) (gdb.Result, error) {
+	result, err := g.DB().Model("message").Where("workid", Work_order.Id).All()
+	if err != nil {
+		log.Sql_log().Line().Println("获取某个工单对应的全部消息", err.Error())
+		return nil, errors.New("获取消息失败")
+	}
+	return result, nil
+}
+
+//更新任务状态
+func Data_update_task_status(task *Bean.Task, status int) error {
+	_, err := g.DB().Model("tasks").Data(g.Map{"status": status}).Where("id", task.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
+		return errors.New("更新任务状态失败")
+	}
+	return nil
 }
