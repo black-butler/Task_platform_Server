@@ -28,7 +28,7 @@ type Task struct {
 	Audit        string //审核提交内容
 	Imgs         string //任务图片
 	One_money    int    //单个金额
-	freeze_money int    //共冻结的金额
+	Freeze_money int    //共冻结的金额
 	Sum          int    //任务派单数量
 	EndDate      string //任务结束时间
 	Time_limit   int    //任务限时多少分钟

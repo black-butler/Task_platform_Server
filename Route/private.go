@@ -318,6 +318,11 @@ func soldTask(r *ghttp.Request) {
 	}
 
 	//返还当前冻结余额
+	err = Data.Data_transfer_money_freeze(user, task.Freeze_money)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
 
 	json := gjson.New(nil)
 	json.Set("code", "0")
