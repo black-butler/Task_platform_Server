@@ -11,7 +11,7 @@ var Task_status_map = map[int]string{Zhengchang: "正常", Xiajia: "下架"}
 //接单状态
 const (
 	Weiwancheng = 0 //未完成
-	Yiwancheng  = 1 //已完成
-	Yidakuan    = 2 //已打款
+	Yiwancheng  = 1 //已完成并打款
 	Chaoshi     = 3 //超时
+	Word_XiaJIa = 4 //下架
 )

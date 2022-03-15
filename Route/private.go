@@ -189,7 +189,7 @@ k:
 	}
 
 	//提交任务
-	id, err := Data.Data_add_task(user, title, body, proof, img, TaskCount, price, Time_limit, now.Format(utils.Time_Format))
+	id, err := Data.Data_add_task(user, title, body, proof, img, price, Zong_money, TaskCount, Time_limit, now.Format(utils.Time_Format))
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "提交任务失败"))
 		return
@@ -276,6 +276,15 @@ func soldTask(r *ghttp.Request) {
 		return
 	}
 
+	//锁当前任务
+	task_suo, err := utils.Get_task_suo(task.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+	task_suo.Lock()
+	defer task_suo.Unlock()
+
 	if task.Userid != user.Id {
 		r.Response.WriteJson(utils.Get_response_json(1, "操作该任务失败"))
 		return
@@ -287,9 +296,32 @@ func soldTask(r *ghttp.Request) {
 		return
 	}
 
+	//获取该任务下所有的接单记录
+	works, err := Data.Get_Task_work_order_all(task)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+	for _, v := range works {
+		//添加一个消息
+		err = Data.Data_Add_message(user, int64(v.Id), task, "当前任务已经手动下架", "")
+		if err != nil {
+			r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+			return
+		}
+		//更新状态
+		err := Data.Data_update_work_status(v, constant.Xiajia)
+		if err != nil {
+			r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+			continue
+		}
+	}
+
+	//返还当前冻结余额
+
 	json := gjson.New(nil)
 	json.Set("code", "0")
-	json.Set("body", "更新状态"+constant.Task_status_map[constant.Xiajia]+"成功")
+	json.Set("body", "更新状态"+constant.Task_status_map[constant.Xiajia]+",成功")
 	r.Response.WriteJson(json)
 }
 

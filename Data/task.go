@@ -13,8 +13,8 @@ import (
 )
 
 //添加任务
-func Data_add_task(user *Bean.User, title string, body string, audit string, img string, one_money int, sum int, time_limit int, endDate string) (int64, error) {
-	id, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "title": title, "body": body, "audit": audit, "imgs": img, "one_money": one_money, "sum": sum, "time_limit": time_limit, "endDate": endDate, "time": time.Now().Format(utils.Time_Format)}).InsertAndGetId()
+func Data_add_task(user *Bean.User, title string, body string, audit string, img string, one_money int, freeze_money int, sum int, time_limit int, endDate string) (int64, error) {
+	id, err := g.DB().Model("tasks").Data(g.Map{"userid": user.Id, "title": title, "body": body, "audit": audit, "imgs": img, "one_money": one_money, "freeze_money": freeze_money, "sum": sum, "time_limit": time_limit, "endDate": endDate, "time": time.Now().Format(utils.Time_Format)}).InsertAndGetId()
 	if err != nil {
 		log.Sql_log().Line().Println("添加任务", err.Error())
 		return 0, errors.New("添加任务失败")
@@ -69,6 +69,26 @@ func Data_Check_user_receive_task(user *Bean.User, taskid int) (*Bean.Work_order
 	Work_order.Task = task
 
 	return Work_order, nil
+}
+
+//获取某个任务下的所有接单记录
+func Get_Task_work_order_all(task *Bean.Task) ([]*Bean.Work_order, error) {
+	Work_orders := make([]*Bean.Work_order, 0)
+	err := g.DB().Model("work_order").Where("taskid", task.Id).Structs(Work_orders)
+	if err != nil {
+		log.Sql_log().Line().Println("获取某个任务下的所有接单记录", err.Error())
+		return nil, errors.New("获取任务失败")
+	}
+
+	for _, v := range Work_orders {
+		v.Task = task
+		user, err := Data_Get_userid(strconv.Itoa(v.Userid))
+		if err != nil {
+			return nil, errors.New("查找用户失败")
+		}
+		v.User = user
+	}
+	return Work_orders, nil
 }
 
 //获取当前所有任务
@@ -128,6 +148,16 @@ func Data_update_task_status(task *Bean.Task, status int) error {
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
 		return errors.New("更新任务状态失败")
+	}
+	return nil
+}
+
+//更新work接单状态
+func Data_update_work_status(work *Bean.Work_order, status int) error {
+	_, err := g.DB().Model("work_order").Data(g.Map{"status": status}).Where("id", work.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
+		return errors.New("更新接单状态失败")
 	}
 	return nil
 }
