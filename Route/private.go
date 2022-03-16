@@ -41,6 +41,8 @@ func init() {
 	group.POST("/subdatum", subdatum)
 	//查看自己和任务对应的工单
 	group.POST("/Vieworder", Vieworder)
+	//确认完成
+	group.POST("/notarize", notarize)
 
 	//上传图片文件
 	group.POST("/UploadFile", UploadFile_Img)
@@ -78,12 +80,17 @@ func order_list(r *ghttp.Request) {
 //单子详情页接口
 func detail(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
-	user := session_user.(*Bean.User)
+	user := session_user.(*Bean.User) //查看单子的用户
 
 	id := r.GetInt("id")
 	record, err := Data.Data_get_task(id)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	if len(record) == 0 {
+		r.Response.WriteJson(utils.Get_response_json(1, "无此任务"))
 		return
 	}
 
@@ -100,6 +107,12 @@ func detail(r *ghttp.Request) {
 		return
 	}
 	json.Set("count", count) //接单用户数量
+
+	word_task, err := Data.Data_Check_user_receive_task(user, id)
+	json.Set("word", false) //该用户是否接过这个单子
+	if err != nil && (word_task.Status == constant.Yiwancheng || word_task.Status == constant.Weiwancheng) {
+		json.Set("word", true)
+	}
 
 	json.Set("code", "0")
 	json.Set("body", record)
@@ -432,6 +445,54 @@ k:
 	json := gjson.New(nil)
 	json.Set("code", 0)
 	json.Set("body", "提交成功")
+	r.Response.WriteJson(json)
+}
+
+//确认完成
+func notarize(r *ghttp.Request) {
+	workid := r.GetInt("workid")
+	work, err := Data.Data_get_Work_orderid(workid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取工单失败"))
+		return
+	}
+
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
+
+	//判断该工单是不是自己的工单
+	if user.Id != work.Task_userid {
+		r.Response.WriteJson(utils.Get_response_json(1, "发布者校验失败"))
+		return
+	}
+
+	//扣除用户冻结余额
+	err = Data.Data_delete_user_freeze_money(work.Task.User, work.Task.One_money)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	//添加接任务用户余额
+	err = Data.Data_add_user_money(work.User, work.Task.One_money)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	//扣除任务剩余冻结余额
+	err = Data.Data_delete_task_freeze_money(work.Task, work.Task.One_money)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", "确认成功")
 	r.Response.WriteJson(json)
 }
 

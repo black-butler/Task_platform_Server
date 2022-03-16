@@ -7,7 +7,7 @@ type Work_order struct {
 	Userid      int    //接任务用户id
 	User        *User  //接任务用户
 	Taskid      int    //任务id
-	task_userid int    //发布任务用户id
+	Task_userid int    //发布任务用户id
 	Task        *Task  //任务对象
 	Create_time string //创建时间
 	Finish_time string //结束时间

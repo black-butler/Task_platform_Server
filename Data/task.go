@@ -22,7 +22,7 @@ func Data_add_task(user *Bean.User, title string, body string, audit string, img
 	return id, nil
 }
 
-//根据id获取某个任务
+//根据id获取某个任务 所有任务
 func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 	task := new(Bean.Task)
 	err := g.DB().Model("tasks").Where("id", taskid).Struct(task)
@@ -158,6 +158,41 @@ func Data_update_work_status(work *Bean.Work_order, status int) error {
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
 		return errors.New("更新接单状态失败")
+	}
+	return nil
+}
+
+//根据id获取工单
+func Data_get_Work_orderid(id int) (*Bean.Work_order, error) {
+
+	Work_order := new(Bean.Work_order)
+	err := g.DB().Model("work_order").Where("id", id).Struct(Work_order)
+	if err != nil {
+		log.Sql_log().Line().Println("获取某个用户对某个任务的接单记录", err.Error())
+		return nil, errors.New("获取任务记录失败")
+	}
+
+	user, err := Data_Get_userid(strconv.Itoa(Work_order.Userid))
+	if err != nil {
+		return nil, err
+	}
+	Work_order.User = user
+
+	task, err := Data_Get_task_id(Work_order.Taskid)
+	if err != nil {
+		return nil, err
+	}
+	Work_order.Task = task
+
+	return Work_order, nil
+}
+
+//扣除任务剩余冻结余额
+func Data_delete_task_freeze_money(task *Bean.Task, money int) error {
+	_, err := g.DB().Model("tasks").Data(g.Map{"freeze_money": gdb.Raw("freeze_money-" + strconv.Itoa(money))}).Where("id", task.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("扣除任务剩余冻结余额", err.Error())
+		return errors.New("任务余额操作失败")
 	}
 	return nil
 }

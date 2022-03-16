@@ -107,3 +107,23 @@ func Data_transfer_money_freeze(user *Bean.User, money int) error {
 	}
 	return nil
 }
+
+//扣除用户冻结余额
+func Data_delete_user_freeze_money(user *Bean.User, money int) error {
+	_, err := g.DB().Model("users").Data(g.Map{"freeze_money": gdb.Raw("freeze_money-" + strconv.Itoa(money))}).Where("id", user.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("扣除用户冻结余额失败", err.Error())
+		return errors.New("用户余额操作失败")
+	}
+	return nil
+}
+
+//添加用户正常余额
+func Data_add_user_money(user *Bean.User, money int) error {
+	_, err := g.DB().Model("users").Data(g.Map{"money": gdb.Raw("money+" + strconv.Itoa(money))}).Where("id", user.Id).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("添加用户正常余额", err.Error())
+		return errors.New("用户余额操作失败")
+	}
+	return nil
+}
