@@ -37,7 +37,7 @@ func init() {
 	group.POST("/receive_task", receive_task)
 	//下架任务
 	group.POST("/soldTask", soldTask)
-	//提交资料
+	//提交消息
 	group.POST("/subdatum", subdatum)
 	//查看自己和任务对应的工单
 	group.POST("/Vieworder", Vieworder)
@@ -110,7 +110,7 @@ func detail(r *ghttp.Request) {
 
 	word_task, err := Data.Data_Check_user_receive_task(user, id)
 	json.Set("word", false) //该用户是否接过这个单子
-	if err != nil && (word_task.Status == constant.Yiwancheng || word_task.Status == constant.Weiwancheng) {
+	if err == nil && (word_task.Status == constant.Yiwancheng || word_task.Status == constant.Weiwancheng) {
 		json.Set("word", true)
 	}
 
@@ -348,7 +348,7 @@ func Vieworder(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	taskid := r.GetInt("id")
+	taskid := r.GetInt("taskid")
 	//添加提交资料
 	task, err := Data.Data_Get_task_id(taskid)
 	if err != nil {
@@ -375,7 +375,7 @@ func Vieworder(r *ghttp.Request) {
 	r.Response.WriteJson(json)
 }
 
-//用户提交资料
+//用户提交消息
 func subdatum(r *ghttp.Request) {
 
 	body := r.GetString("body")

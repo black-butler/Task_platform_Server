@@ -30,6 +30,8 @@ func init() {
 	group.POST("/update_userinfo", update_touxiang)
 	//个人获取头像
 	group.GET("/get_touxiang", Get_touxiang)
+	//根据用户id获取头像
+	group.GET("/get_touxiang_id", Get_touxiang_id)
 	//个人发布的单子
 	group.POST("/User_fadan", User_fadan)
 	//个人接了哪些单子
@@ -85,6 +87,48 @@ func Get_touxiang(r *ghttp.Request) {
 
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
+
+	filename, err := Data.Data_Get_Img_filename(user.Img)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "查找文件失败"))
+		return
+	}
+
+	s := strings.Split(filename, ".")
+	if len(s) != 2 {
+		r.Response.WriteJson(utils.Get_response_json(1, "查找文件失败"))
+		return
+	}
+
+	f, err := os.OpenFile(Config.Img_catalog+filename, os.O_RDONLY, 0600)
+	defer f.Close()
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "查找文件失败"))
+		log.File_read().Line().Println("文件读取错误", err.Error())
+		return
+	}
+
+	contentByte, err := ioutil.ReadAll(f)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "查找文件失败"))
+		return
+	}
+
+	r.Response.Header().Set("Content-Type", "image/"+utils.File_biaozhun_name[s[1]])
+	//r.Response.Header().Set("Accept-Ranges", "bytes")
+	r.Response.Header().Set("Content-Disposition", fmt.Sprintf(`attachment;filename="%s"`, "img"))
+	r.Response.Write(contentByte)
+}
+
+//根据用户id获取头像
+func Get_touxiang_id(r *ghttp.Request) {
+
+	userid := r.GetString("userid")
+	user, err := Data.Data_Get_userid(userid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "查找用户失败"))
+		return
+	}
 
 	filename, err := Data.Data_Get_Img_filename(user.Img)
 	if err != nil {
