@@ -15,6 +15,7 @@ import (
 	"platform/constant"
 	"platform/log"
 	"platform/utils"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -112,6 +113,7 @@ func detail(r *ghttp.Request) {
 	json.Set("word", false) //该用户是否接过这个单子
 	if err == nil && (word_task.Status == constant.Yiwancheng || word_task.Status == constant.Weiwancheng) {
 		json.Set("word", true)
+		json.Set("wordid", word_task.Id)
 	}
 
 	json.Set("code", "0")
@@ -343,23 +345,22 @@ func soldTask(r *ghttp.Request) {
 	r.Response.WriteJson(json)
 }
 
-//查看自己和任务对应的工单
+//工单详情页
 func Vieworder(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	taskid := r.GetInt("taskid")
-	//添加提交资料
-	task, err := Data.Data_Get_task_id(taskid)
+	wordid := r.GetInt("wordid")
+
+	//获取id对应的工单
+	Work_order, err := Data.Data_get_Work_orderid(wordid)
 	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
+		r.Response.WriteJson(utils.Get_response_json(1, "获取工单失败"))
 		return
 	}
 
-	//获取工单
-	Work_order, err := Data.Data_Check_user_receive_task(user, task.Id)
-	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+	if !(Work_order.Userid == user.Id || Work_order.Task_userid == user.Id) {
+		r.Response.WriteJson(utils.Get_response_json(1, "鉴权失败"))
 		return
 	}
 
@@ -372,6 +373,8 @@ func Vieworder(r *ghttp.Request) {
 	json := gjson.New(nil)
 	json.Set("code", "0")
 	json.Set("body", result_message)
+	json.Set(strconv.Itoa(user.Id), user.Number)
+	json.Set(strconv.Itoa(Work_order.Task.Userid), Work_order.Task.User.Number)
 	r.Response.WriteJson(json)
 }
 

@@ -38,6 +38,8 @@ func init() {
 	group.POST("/User_jiedan", User_jiedan)
 	//用户充值
 	group.POST("/user_top_up", user_top_up)
+	//退出登录
+	group.POST("/log_out", log_out)
 }
 
 //用户信息接口
@@ -213,5 +215,15 @@ func user_top_up(r *ghttp.Request) {
 	json := gjson.New(nil)
 	json.Set("code", 0)
 	json.Set("body", url)
+	r.Response.WriteJson(json)
+}
+
+//登出
+func log_out(r *ghttp.Request) {
+	r.Session.Remove(Config.Session_user)
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", "退出成功")
 	r.Response.WriteJson(json)
 }
