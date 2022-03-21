@@ -90,6 +90,10 @@ func detail(r *ghttp.Request) {
 		return
 	}
 	record.User = nil
+	record.User = nil
+	record.User = nil
+	record.User = nil
+	record.User = nil
 	//if len(record) == 0 {
 	//	r.Response.WriteJson(utils.Get_response_json(1, "无此任务"))
 	//	return
