@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 
 	_ "platform/Route" //初始化路由
+
+	_ "platform/timed_task" //初始化定时任务
 )
 
 func main() {

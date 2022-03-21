@@ -83,7 +83,7 @@ func detail(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User) //查看单子的用户
 
-	id := r.GetInt("id")
+	id := r.GetInt("taskid")
 	record, err := Data.Data_get_task(id)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
@@ -244,6 +244,18 @@ func receive_task(r *ghttp.Request) {
 		return
 	}
 
+	//判断该任务是否已经下架
+	ti, err := time.Parse(utils.Time_Format, task.EndDate)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "时间格式化错误"))
+		return
+	}
+
+	if time.Now().Unix() > ti.Unix() {
+		r.Response.WriteJson(utils.Get_response_json(1, "当前任务已经结束"))
+		return
+	}
+
 	//锁当前任务
 	task_suo, err := utils.Get_task_suo(task.Id)
 	if err != nil {
@@ -375,6 +387,14 @@ func Vieworder(r *ghttp.Request) {
 	json.Set("body", result_message)
 	json.Set(strconv.Itoa(user.Id), user.Number)
 	json.Set(strconv.Itoa(Work_order.Task.Userid), Work_order.Task.User.Number)
+	json.Set("status", Work_order.Status) //如果status=1 已完成并打款
+
+	if user.Id == Work_order.Task_userid {
+		json.Set("is_taskuser", true)
+	} else {
+		json.Set("is_taskuser", false)
+	}
+
 	r.Response.WriteJson(json)
 }
 
@@ -383,7 +403,7 @@ func subdatum(r *ghttp.Request) {
 
 	body := r.GetString("body")
 	img := r.GetString("imgs")
-	taskid := r.GetInt("taskid")
+	wordid := r.GetInt("wordid")
 
 	if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 1000 {
 		r.Response.WriteJson(utils.Get_response_json(1, "任务提交的文字资料不能小于10大于1000"))
@@ -420,24 +440,24 @@ k:
 		return
 	}
 
+	//获取工单
+	Work_order, err := Data.Data_get_Work_orderid(wordid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
 	//添加提交资料
-	task, err := Data.Data_Get_task_id(taskid)
+	task, err := Data.Data_Get_task_id(Work_order.Taskid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
 		return
 	}
 
-	if task.Userid == user.Id {
-		r.Response.WriteJson(utils.Get_response_json(1, "不能自己提交消息"))
-		return
-	}
-
-	//获取工单
-	Work_order, err := Data.Data_Check_user_receive_task(user, task.Id)
-	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
-		return
-	}
+	//if task.Userid == user.Id {
+	//	r.Response.WriteJson(utils.Get_response_json(1, "不能自己提交消息"))
+	//	return
+	//}
 
 	err = Data.Data_Add_message(user, int64(Work_order.Id), task, body, img)
 	if err != nil {
@@ -453,7 +473,7 @@ k:
 
 //确认完成
 func notarize(r *ghttp.Request) {
-	workid := r.GetInt("workid")
+	workid := r.GetInt("wordid") //工单id
 	work, err := Data.Data_get_Work_orderid(workid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "获取工单失败"))
@@ -469,6 +489,11 @@ func notarize(r *ghttp.Request) {
 	//判断该工单是不是自己的工单
 	if user.Id != work.Task_userid {
 		r.Response.WriteJson(utils.Get_response_json(1, "发布者校验失败"))
+		return
+	}
+
+	if work.Status == constant.Yiwancheng {
+		r.Response.WriteJson(utils.Get_response_json(1, "该工单已确认完成"))
 		return
 	}
 

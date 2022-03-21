@@ -28,3 +28,7 @@ func File_read() *glog.Logger {
 func File_gcache_log() *glog.Logger {
 	return g.Log("File_gcache_log").File("gcache缓存日志-{Ymd}.log")
 }
+
+func File_timed_log() *glog.Logger {
+	return g.Log("File_timed").File("定时任务日志-{Ymd}.log")
+}

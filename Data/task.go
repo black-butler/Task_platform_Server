@@ -196,3 +196,14 @@ func Data_delete_task_freeze_money(task *Bean.Task, money int) error {
 	}
 	return nil
 }
+
+//获取所有任务 Data_get_all_task_struct方法
+func Data_get_all_task_struct() ([]*Bean.Task, error) {
+	Tasks := make([]*Bean.Task, 0)
+	err := g.DB().Model("tasks").Where("status", constant.Zhengchang).Structs(Tasks)
+	if err != nil {
+		log.Sql_log().Line().Println("获取所有任务 Data_get_all_task_struct方法失败:", err.Error())
+		return nil, errors.New("获取所有任务")
+	}
+	return Tasks, nil
+}
