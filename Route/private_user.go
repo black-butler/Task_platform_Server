@@ -32,10 +32,14 @@ func init() {
 	group.GET("/get_touxiang", Get_touxiang)
 	//根据用户id获取头像
 	group.GET("/get_touxiang_id", Get_touxiang_id)
-	//个人发布的单子
+	//个人发布单子
 	group.POST("/User_fadan", User_fadan)
-	//个人接了哪些单子
+	//个人接了单子
 	group.POST("/User_jiedan", User_jiedan)
+	//个人接单工单
+	//group.POST()
+	//个人审核工单
+
 	//用户充值
 	group.POST("/user_top_up", user_top_up)
 	//退出登录
@@ -166,10 +170,47 @@ func Get_touxiang_id(r *ghttp.Request) {
 
 //个人发布的单子
 func User_fadan(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	result, err := Data.Data_oneself_receive_tasks(user.Id)
+	if err != nil {
+		utils.Get_response_json(1, err.Error())
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", result)
+	r.Response.WriteJson(json)
 }
 
 //个人接了哪些单子
 func User_jiedan(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	result, err := Data.Data_oneself_publish_tasks(user.Id)
+	if err != nil {
+		utils.Get_response_json(1, err.Error())
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", result)
+	r.Response.WriteJson(json)
+}
+
+//接单工单
+func User_jiegongdan(r *ghttp.Request) {
+	//session_user := r.Session.Get(Config.Session_user)
+	//user := session_user.(*Bean.User)
+
+}
+
+//审核工单
+func User_shengongdan(r *ghttp.Request) {
+
 }
 
 //用户充值

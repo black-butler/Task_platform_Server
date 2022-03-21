@@ -84,19 +84,24 @@ func detail(r *ghttp.Request) {
 	user := session_user.(*Bean.User) //查看单子的用户
 
 	id := r.GetInt("taskid")
-	record, err := Data.Data_get_task(id)
+	record, err := Data.Data_Get_task_id(id)
 	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
-		return
-	}
-
-	if len(record) == 0 {
 		r.Response.WriteJson(utils.Get_response_json(1, "无此任务"))
 		return
 	}
+	record.User = nil
+	//if len(record) == 0 {
+	//	r.Response.WriteJson(utils.Get_response_json(1, "无此任务"))
+	//	return
+	//}
 
 	json := gjson.New(nil)
-	if user.Id == record["userid"].Int() { //判断查看单子详情页的是否是自己
+	//if user.Id == record["userid"].Int() { //判断查看单子详情页的是否是自己
+	//	json.Set("is_me", true)
+	//} else {
+	//	json.Set("is_me", false)
+	//}
+	if user.Id == record.Userid { //判断查看单子详情页的是否是自己
 		json.Set("is_me", true)
 	} else {
 		json.Set("is_me", false)

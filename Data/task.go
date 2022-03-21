@@ -74,7 +74,7 @@ func Data_Check_user_receive_task(user *Bean.User, taskid int) (*Bean.Work_order
 //获取某个任务下的所有接单记录
 func Get_Task_work_order_all(task *Bean.Task) ([]*Bean.Work_order, error) {
 	Work_orders := make([]*Bean.Work_order, 0)
-	err := g.DB().Model("work_order").Where("taskid", task.Id).Structs(Work_orders)
+	err := g.DB().Model("work_order").Where("taskid", task.Id).Structs(&Work_orders)
 	if err != nil {
 		log.Sql_log().Line().Println("获取某个任务下的所有接单记录", err.Error())
 		return nil, errors.New("获取任务失败")
@@ -196,3 +196,39 @@ func Data_delete_task_freeze_money(task *Bean.Task, money int) error {
 	}
 	return nil
 }
+
+//查看自己接的任务
+func Data_oneself_receive_tasks(userid int) (gdb.Result, error) {
+	result, err := g.DB().Model("work_order").Where("userid", userid).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看自己接的任务-1:", err.Error())
+		return nil, errors.New("查看自己接的任务失败")
+	}
+
+	taskids := make([]int, 0)
+	for _, v := range result {
+		taskids = append(taskids, v["taskid"].Int())
+	}
+
+	word_result, err := g.DB().Model("tasks").Where("id", taskids).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看自己接的任务-2:", err.Error())
+		return nil, errors.New("查看自己接的任务失败")
+	}
+
+	return word_result, nil
+}
+
+//查看自己发布的任务
+func Data_oneself_publish_tasks(userid int) (gdb.Result, error) {
+	word_result, err := g.DB().Model("tasks").Where("userid", userid).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看自己发布的任务:", err.Error())
+		return nil, errors.New("查看自己发布的任务失败")
+	}
+
+	return word_result, nil
+}
+
+//查看接单工单
+//func
