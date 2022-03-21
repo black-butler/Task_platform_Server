@@ -231,4 +231,23 @@ func Data_oneself_publish_tasks(userid int) (gdb.Result, error) {
 }
 
 //查看接单工单
-//func
+func Data_oneself_receive_work_order(userid int) (gdb.Result, error) {
+	word_result, err := g.DB().Model("work_order").Where("userid", userid).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看接单工单:", err.Error())
+		return nil, errors.New("查看接单工单失败")
+	}
+
+	return word_result, nil
+}
+
+//查看审核工单
+func Data_oneself_publish_work_order(userid int) (gdb.Result, error) {
+	word_result, err := g.DB().Model("work_order").Where("task_userid", userid).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看审核工单任务:", err.Error())
+		return nil, errors.New("查看审核工单失败")
+	}
+
+	return word_result, nil
+}

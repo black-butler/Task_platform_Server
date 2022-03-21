@@ -37,9 +37,9 @@ func init() {
 	//个人接了单子
 	group.POST("/User_jiedan", User_jiedan)
 	//个人接单工单
-	//group.POST()
+	group.POST("/User_jiegongdan", User_jiegongdan)
 	//个人审核工单
-
+	group.POST("/User_shengongdan", User_shengongdan)
 	//用户充值
 	group.POST("/user_top_up", user_top_up)
 	//退出登录
@@ -203,14 +203,36 @@ func User_jiedan(r *ghttp.Request) {
 
 //接单工单
 func User_jiegongdan(r *ghttp.Request) {
-	//session_user := r.Session.Get(Config.Session_user)
-	//user := session_user.(*Bean.User)
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
 
+	result, err := Data.Data_oneself_receive_work_order(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", result)
+	r.Response.WriteJson(json)
 }
 
 //审核工单
 func User_shengongdan(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
 
+	result, err := Data.Data_oneself_publish_work_order(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", result)
+	r.Response.WriteJson(json)
 }
 
 //用户充值
