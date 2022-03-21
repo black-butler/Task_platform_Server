@@ -13,6 +13,7 @@ func init() {
 	go func() {
 		log.File_timed_log().Println("检测任务是否超时 - 定时任务开启成功")
 		for {
+			log.File_timed_log().Println("进行一次检测任务是否超时")
 
 			tasks, err := Data.Data_get_all_task()
 			if err != nil {
