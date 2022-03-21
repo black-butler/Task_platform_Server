@@ -317,7 +317,7 @@ func soldTask(r *ghttp.Request) {
 		return
 	}
 
-	err = Data.Data_update_task_status(task, constant.Xiajia)
+	err = Data.Data_update_task_status(task.Id, constant.Xiajia)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
 		return

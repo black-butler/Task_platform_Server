@@ -143,8 +143,8 @@ func Data_get_all_message(Work_order *Bean.Work_order) (gdb.Result, error) {
 }
 
 //更新任务状态
-func Data_update_task_status(task *Bean.Task, status int) error {
-	_, err := g.DB().Model("tasks").Data(g.Map{"status": status}).Where("id", task.Id).Update()
+func Data_update_task_status(taskid int, status int) error {
+	_, err := g.DB().Model("tasks").Data(g.Map{"status": status}).Where("id", taskid).Update()
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
 		return errors.New("更新任务状态失败")
@@ -195,15 +195,4 @@ func Data_delete_task_freeze_money(task *Bean.Task, money int) error {
 		return errors.New("任务余额操作失败")
 	}
 	return nil
-}
-
-//获取所有任务 Data_get_all_task_struct方法
-func Data_get_all_task_struct() ([]*Bean.Task, error) {
-	Tasks := make([]*Bean.Task, 0)
-	err := g.DB().Model("tasks").Where("status", constant.Zhengchang).Structs(Tasks)
-	if err != nil {
-		log.Sql_log().Line().Println("获取所有任务 Data_get_all_task_struct方法失败:", err.Error())
-		return nil, errors.New("获取所有任务")
-	}
-	return Tasks, nil
 }
