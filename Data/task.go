@@ -329,3 +329,21 @@ func Data_update_message_read(userid int, wordid int) error {
 
 	return nil
 }
+
+//更新word未读
+func Data_update_word_unread(wordid int, user_see int, taskuser_see int) {
+	if user_see == 0 {
+		_, err := g.DB().Model("work_order").Data(g.Map{"user_see": user_see}).Where("id", wordid).Update()
+		if err != nil {
+			log.Sql_log().Line().Println("更新word未读:", err.Error())
+			return
+		}
+	}
+	if taskuser_see == 0 {
+		_, err := g.DB().Model("work_order").Data(g.Map{"taskuser_see": taskuser_see}).Where("id", wordid).Update()
+		if err != nil {
+			log.Sql_log().Line().Println("更新word未读:", err.Error())
+			return
+		}
+	}
+}

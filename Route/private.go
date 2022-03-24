@@ -305,6 +305,8 @@ func receive_task(r *ghttp.Request) {
 		return
 	}
 
+	utils.Set_weidu(word_task, user)
+
 	r.Response.WriteJson(utils.Get_response_json(0, "接任务成功，请在指定时间内完成"))
 }
 
@@ -362,6 +364,8 @@ func soldTask(r *ghttp.Request) {
 			r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
 			continue
 		}
+
+		utils.Set_weidu(v, user)
 	}
 
 	//返还当前冻结余额
@@ -484,6 +488,8 @@ k:
 		r.Response.WriteJson(utils.Get_response_json(1, "获取任务失败"))
 		return
 	}
+
+	utils.Set_weidu(Work_order, user)
 
 	json := gjson.New(nil)
 	json.Set("code", 0)
