@@ -238,6 +238,18 @@ func Data_oneself_receive_work_order(userid int) (gdb.Result, error) {
 		return nil, errors.New("查看接单工单失败")
 	}
 
+	for i, v := range word_result {
+		task, err := Data_Get_task_id(v["taskid"].Int())
+		if err != nil {
+			return nil, err
+		}
+
+		z := new(g.Var)
+		z.Set(task.Title)
+
+		word_result[i]["taskTitle"] = z
+	}
+
 	return word_result, nil
 }
 
@@ -249,5 +261,71 @@ func Data_oneself_publish_work_order(userid int) (gdb.Result, error) {
 		return nil, errors.New("查看审核工单失败")
 	}
 
+	for i, v := range word_result {
+		task, err := Data_Get_task_id(v["taskid"].Int())
+		if err != nil {
+			return nil, err
+		}
+
+		z := new(g.Var)
+		z.Set(task.Title)
+
+		word_result[i]["taskTitle"] = z
+	}
+
 	return word_result, nil
+}
+
+//查看自己未读的工单数量
+func Data_gongdan_see_unread(userid int) (int, int, error) {
+
+	result, err := g.DB().Model("work_order").Where("userid", userid).Where("task_userid", userid).All()
+	if err != nil {
+		log.Sql_log().Line().Println("查看自己未读的工单数量:", err.Error())
+		return 0, 0, err
+	}
+
+	user_see_count := 0
+	taskuser_see_count := 0
+	for _, v := range result {
+		if v["userid"].Int() == userid {
+			if v["user_see"].Int() == 0 {
+				user_see_count++
+				break
+			}
+		} else {
+			if v["taskuser_see"].Int() == 0 {
+				taskuser_see_count++
+				break
+			}
+		}
+	}
+
+	return user_see_count, taskuser_see_count, nil
+}
+
+//将某个消息置为已读
+func Data_update_message_read(userid int, wordid int) error {
+
+	word, err := g.DB().Model("work_order").Where("id", wordid).One()
+	if err != nil {
+		log.Sql_log().Line().Println("将某个消息置为已读:", err.Error())
+		return errors.New("消息错误")
+	}
+
+	if word["userid"].Int() == userid {
+		_, err := g.DB().Model("work_order").Data(g.Map{"user_see": 1}).Update()
+		if err != nil {
+			log.Sql_log().Line().Println("将某个消息置为已读:", err.Error())
+			return errors.New("消息错误")
+		}
+	} else if word["task_userid"].Int() == userid {
+		_, err := g.DB().Model("message").Data(g.Map{"taskuser_see": 1}).Update()
+		if err != nil {
+			log.Sql_log().Line().Println("将某个消息置为已读:", err.Error())
+			return errors.New("消息错误")
+		}
+	}
+
+	return nil
 }

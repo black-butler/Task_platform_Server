@@ -40,6 +40,10 @@ func init() {
 	group.POST("/User_jiegongdan", User_jiegongdan)
 	//个人审核工单
 	group.POST("/User_shengongdan", User_shengongdan)
+	//工单未读数量
+	group.POST("/User_seecount", User_seecount)
+	//消息已读
+	group.POST("/Message_see_read", Message_see_read)
 	//用户充值
 	group.POST("/user_top_up", user_top_up)
 	//退出登录
@@ -201,7 +205,7 @@ func User_jiedan(r *ghttp.Request) {
 	r.Response.WriteJson(json)
 }
 
-//接单工单
+//接单工单_消息
 func User_jiegongdan(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
@@ -218,7 +222,7 @@ func User_jiegongdan(r *ghttp.Request) {
 	r.Response.WriteJson(json)
 }
 
-//审核工单
+//审核工单_消息
 func User_shengongdan(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
@@ -232,6 +236,41 @@ func User_shengongdan(r *ghttp.Request) {
 	json := gjson.New(nil)
 	json.Set("code", 0)
 	json.Set("body", result)
+	r.Response.WriteJson(json)
+}
+
+//获取未读工单
+func User_seecount(r *ghttp.Request) {
+
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	user_see, taskuser_see, err := Data.Data_gongdan_see_unread(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取未读数量错误"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("user_see", user_see)
+	json.Set("taskuser_see", taskuser_see)
+	r.Response.WriteJson(json)
+}
+
+//消息已读
+func Message_see_read(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	workid := r.GetInt("workid")
+
+	err := Data.Data_update_message_read(user.Id, workid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "消息错误"))
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
 	r.Response.WriteJson(json)
 }
 

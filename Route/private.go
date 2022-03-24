@@ -40,7 +40,7 @@ func init() {
 	group.POST("/soldTask", soldTask)
 	//提交消息
 	group.POST("/subdatum", subdatum)
-	//查看自己和任务对应的工单
+	//工单详情
 	group.POST("/Vieworder", Vieworder)
 	//确认完成
 	group.POST("/notarize", notarize)
@@ -94,10 +94,21 @@ func detail(r *ghttp.Request) {
 	record.User = nil
 	record.User = nil
 	record.User = nil
-	//if len(record) == 0 {
-	//	r.Response.WriteJson(utils.Get_response_json(1, "无此任务"))
-	//	return
-	//}
+
+	s := make(map[string]interface{})
+	s["Id"] = record.Id
+	s["Userid"] = record.Userid
+	s["Title"] = record.Title
+	s["Body"] = record.Body
+	s["Audit"] = record.Audit
+	s["Imgs"] = record.Imgs
+	s["One_money"] = record.One_money
+	s["Freeze_money"] = record.Freeze_money
+	s["Sum"] = record.Sum
+	s["EndDate"] = record.EndDate
+	s["Time_limit"] = record.Time_limit
+	s["Status"] = record.Status
+	s["Time"] = record.Time
 
 	json := gjson.New(nil)
 	//if user.Id == record["userid"].Int() { //判断查看单子详情页的是否是自己
@@ -126,7 +137,7 @@ func detail(r *ghttp.Request) {
 	}
 
 	json.Set("code", "0")
-	json.Set("body", record)
+	json.Set("body", s)
 	r.Response.WriteJson(json)
 }
 
