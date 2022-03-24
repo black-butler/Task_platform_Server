@@ -279,7 +279,7 @@ func Data_oneself_publish_work_order(userid int) (gdb.Result, error) {
 //查看自己未读的工单数量
 func Data_gongdan_see_unread(userid int) (int, int, error) {
 
-	result, err := g.DB().Model("work_order").Where("userid", userid).Where("task_userid", userid).All()
+	result, err := g.DB().Model("work_order").Where("userid", userid).WhereOr("task_userid", userid).All()
 	if err != nil {
 		log.Sql_log().Line().Println("查看自己未读的工单数量:", err.Error())
 		return 0, 0, err
