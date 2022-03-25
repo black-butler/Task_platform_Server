@@ -265,6 +265,11 @@ func receive_task(r *ghttp.Request) {
 	}
 
 	//判断该任务是否已经下架
+	if task.Status == constant.Xiajia {
+		r.Response.WriteJson(utils.Get_response_json(1, "当前任务已下架"))
+		return
+	}
+
 	ti, err := time.Parse(utils.Time_Format, task.EndDate)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "时间格式化错误"))
@@ -291,6 +296,17 @@ func receive_task(r *ghttp.Request) {
 		return
 	}
 
+	//获取接了当前任务的数量
+	count, err := Data.Data_get_task_dan_count(task.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+	if count >= task.Sum {
+		r.Response.WriteJson(utils.Get_response_json(1, "该任务接单用户已满"))
+		return
+	}
+
 	finish_time := time.Now().Add(time.Minute * time.Duration(task.Time_limit))
 	wordid, err := Data.Data_Set_work_order(user, task.Id, task.Userid, finish_time.Format(utils.Time_Format))
 	if err != nil {
@@ -302,6 +318,12 @@ func receive_task(r *ghttp.Request) {
 	err = Data.Data_Add_message(user, wordid, task, "我已经接了这个任务，正在完成中...", "")
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "接任务失败"))
+		return
+	}
+
+	word_task, err = Data.Data_Check_user_receive_task(user, task.Id)
+	if word_task != nil {
+		//r.Response.WriteJson(utils.Get_response_json(1, "C"))
 		return
 	}
 
@@ -322,6 +344,11 @@ func soldTask(r *ghttp.Request) {
 	task, err := Data.Data_Get_task_id(taskid)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "操作该任务失败"))
+		return
+	}
+
+	if task.Status == constant.Xiajia {
+		r.Response.WriteJson(utils.Get_response_json(1, "当前任务已下架"))
 		return
 	}
 
