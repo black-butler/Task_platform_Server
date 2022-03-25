@@ -322,7 +322,7 @@ func receive_task(r *ghttp.Request) {
 	}
 
 	word_task, err = Data.Data_Check_user_receive_task(user, task.Id)
-	if word_task != nil {
+	if word_task == nil {
 		//r.Response.WriteJson(utils.Get_response_json(1, "C"))
 		return
 	}
@@ -436,7 +436,7 @@ func Vieworder(r *ghttp.Request) {
 	json := gjson.New(nil)
 	json.Set("code", "0")
 	json.Set("body", result_message)
-	json.Set(strconv.Itoa(user.Id), user.Number)
+	json.Set(strconv.Itoa(Work_order.User.Id), Work_order.User.Number)
 	json.Set(strconv.Itoa(Work_order.Task.Userid), Work_order.Task.User.Number)
 	json.Set("status", Work_order.Status) //如果status=1 已完成并打款
 

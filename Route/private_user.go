@@ -252,8 +252,8 @@ func User_seecount(r *ghttp.Request) {
 	}
 
 	json := gjson.New(nil)
-	json.Set("user_see", user_see)
-	json.Set("taskuser_see", taskuser_see)
+	json.Set("jiedan_see", user_see)
+	json.Set("shenhe_see", taskuser_see)
 	r.Response.WriteJson(json)
 }
 
@@ -262,7 +262,7 @@ func Message_see_read(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	workid := r.GetInt("workid")
+	workid := r.GetInt("wordid")
 
 	err := Data.Data_update_message_read(user.Id, workid)
 	if err != nil {

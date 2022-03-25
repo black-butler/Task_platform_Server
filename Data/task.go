@@ -113,7 +113,7 @@ func Data_get_task(id int) (gdb.Record, error) {
 
 //获取某个任务的所有接单数量
 func Data_get_task_dan_count(taskid int) (int, error) {
-	reslut, err := g.DB().Model("work_order").Where("taskid", taskid).WhereNotIn("status", g.Slice{constant.Chaoshi}).All()
+	reslut, err := g.DB().Model("work_order").Where("taskid", taskid).All()
 	if err != nil {
 		log.Sql_log().Line().Println("获取某个任务的所有接单数量", err.Error())
 		return 0, errors.New("查看当前任务失败")
@@ -291,12 +291,10 @@ func Data_gongdan_see_unread(userid int) (int, int, error) {
 		if v["userid"].Int() == userid {
 			if v["user_see"].Int() == 0 {
 				user_see_count++
-				break
 			}
 		} else {
 			if v["taskuser_see"].Int() == 0 {
 				taskuser_see_count++
-				break
 			}
 		}
 	}
@@ -314,13 +312,13 @@ func Data_update_message_read(userid int, wordid int) error {
 	}
 
 	if word["userid"].Int() == userid {
-		_, err := g.DB().Model("work_order").Data(g.Map{"user_see": 1}).Update()
+		_, err := g.DB().Model("work_order").Data(g.Map{"user_see": 1}).Where("id", wordid).Update()
 		if err != nil {
 			log.Sql_log().Line().Println("将某个消息置为已读:", err.Error())
 			return errors.New("消息错误")
 		}
 	} else if word["task_userid"].Int() == userid {
-		_, err := g.DB().Model("message").Data(g.Map{"taskuser_see": 1}).Update()
+		_, err := g.DB().Model("work_order").Data(g.Map{"taskuser_see": 1}).Where("id", wordid).Update()
 		if err != nil {
 			log.Sql_log().Line().Println("将某个消息置为已读:", err.Error())
 			return errors.New("消息错误")
