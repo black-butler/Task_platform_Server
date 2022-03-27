@@ -17,6 +17,7 @@ import (
 	"platform/utils"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 func init() {
@@ -409,6 +410,11 @@ func bound_alipay_number(r *ghttp.Request) {
 
 	alipay_number := r.GetString("alipay_number")
 	alipay_name := r.GetString("alipay_name")
+
+	if utf8.RuneCountInString(alipay_number) > 50 || utf8.RuneCountInString(alipay_name) > 10 {
+		r.Response.WriteJson(utils.Get_response_json(1, "数据不合法"))
+		return
+	}
 
 	err := Data.Data_update_user_alipay(user.Id, alipay_number, alipay_name)
 	if err != nil {
