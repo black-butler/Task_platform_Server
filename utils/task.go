@@ -27,7 +27,7 @@ func Get_task_suo(taskid int) (*sync.Mutex, error) {
 		return nil, err
 	}
 	if v == nil {
-		Jie_Task_Suo.Set(taskid, new(sync.Mutex), time.Minute*60)
+		Jie_Task_Suo.Set(taskid, new(sync.Mutex), time.Minute*120)
 	}
 
 	v, err = Jie_Task_Suo.Get(taskid)

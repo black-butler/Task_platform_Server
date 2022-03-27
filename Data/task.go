@@ -221,10 +221,10 @@ c:
 
 		for _, j := range word_result {
 			if v["taskid"].Int() == j["id"].Int() {
-				if j["status"].Int() == constant.Yiwancheng {
-					v["accomplish_status"] = g.NewVar(true)
+				if v["status"].Int() == constant.Yiwancheng {
+					j["accomplish_status"] = g.NewVar(true, false)
 				} else {
-					v["accomplish_status"] = g.NewVar(false)
+					j["accomplish_status"] = g.NewVar(false, false)
 				}
 				continue c
 			}

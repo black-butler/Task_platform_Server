@@ -27,7 +27,7 @@ func Data_Add_user(number string, password string) error {
 		return errors.New("账号已存在")
 	}
 	//println(result)
-	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password, "img": 1, "alipay_number": ""}).Insert()
+	_, err = g.DB().Model("users").Data(g.Map{"number": number, "password": password, "img": 1, "alipay_number": "", "alipay_name": ""}).Insert()
 	if err != nil {
 		log.Sql_log().Line().Println("添加用户", err.Error())
 		return errors.New("账号已存在")
@@ -85,6 +85,16 @@ func Data_Add_User_money(userid string, money int) {
 		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
 		return
 	}
+}
+
+//扣除用户余额
+func Data_delete_user_money(userid int, money int) error {
+	_, err := g.DB().Model("users").Data(g.Map{"money": gdb.Raw("money-" + strconv.Itoa(money))}).Where("id", userid).Update()
+	if err != nil {
+		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
+		return err
+	}
+	return nil
 }
 
 //扣除用户余额到冻结余额

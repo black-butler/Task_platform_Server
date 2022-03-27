@@ -46,6 +46,10 @@ func init() {
 	group.POST("/Message_see_read", Message_see_read)
 	//用户充值
 	group.POST("/user_top_up", user_top_up)
+	//用户申请提现
+	group.POST("/apply_for_withdraw_deposit", apply_for_withdraw_deposit)
+	//用户提现记录
+	group.POST("/withdraw_deposit_record", withdraw_deposit_record)
 	//退出登录
 	group.POST("/log_out", log_out)
 }
@@ -279,6 +283,14 @@ func user_top_up(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "操作用户锁失败"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
+
 	float_money := r.GetFloat64("money")
 	if float_money != float64(int(float_money)) {
 		r.Response.WriteJson(utils.Get_response_json(1, "只能充值整数"))
@@ -318,6 +330,69 @@ func user_top_up(r *ghttp.Request) {
 	json.Set("code", 0)
 	json.Set("body", url)
 	r.Response.WriteJson(json)
+}
+
+//个人申请提现
+func apply_for_withdraw_deposit(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现锁失败"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
+
+	Data.Data_refre_userid(user)
+
+	money := r.GetFloat64("money")
+	if money != float64(int(money)) {
+		r.Response.WriteJson(utils.Get_response_json(1, "只能提现整数"))
+		return
+	}
+
+	if int(money) == 0 {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现金额错误"))
+		return
+	}
+
+	if int(money) > user.Money {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现金额不足"))
+		return
+	}
+
+	err = Data.Data_delete_user_money(user.Id, int(money))
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现失败"))
+		return
+	}
+
+	err = Data.Data_Add_withdraw_deposit(user.Id, int(money))
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现失败"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", "提现成功")
+	r.Response.WriteJson(json)
+}
+
+//提现记录
+func withdraw_deposit_record(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	result, err := Data.Data_withdraw_deposit_record(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现记录错误"))
+		return
+	}
+
+	r.Response.WriteJson(result)
 }
 
 //登出
