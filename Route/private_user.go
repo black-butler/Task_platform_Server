@@ -347,6 +347,11 @@ func apply_for_withdraw_deposit(r *ghttp.Request) {
 
 	Data.Data_refre_userid(user)
 
+	if user.Alipay_number == "" || user.Alipay_name == "" {
+		r.Response.WriteJson(utils.Get_response_json(1, "未绑定支付宝"))
+		return
+	}
+
 	money := r.GetFloat64("money")
 	if money != float64(int(money)) {
 		r.Response.WriteJson(utils.Get_response_json(1, "只能提现整数"))
@@ -369,7 +374,7 @@ func apply_for_withdraw_deposit(r *ghttp.Request) {
 		return
 	}
 
-	err = Data.Data_Add_withdraw_deposit(user.Id, int(money))
+	err = Data.Data_Add_withdraw_deposit(user.Id, int(money), user.Alipay_number, user.Alipay_name)
 	if err != nil {
 		r.Response.WriteJson(utils.Get_response_json(1, "提现失败"))
 		return
