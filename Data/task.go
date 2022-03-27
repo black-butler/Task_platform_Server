@@ -216,6 +216,22 @@ func Data_oneself_receive_tasks(userid int) (gdb.Result, error) {
 		return nil, errors.New("查看自己接的任务失败")
 	}
 
+c:
+	for _, v := range result {
+
+		for _, j := range word_result {
+			if v["taskid"].Int() == j["id"].Int() {
+				if j["status"].Int() == constant.Yiwancheng {
+					v["accomplish_status"] = g.NewVar(true)
+				} else {
+					v["accomplish_status"] = g.NewVar(false)
+				}
+				continue c
+			}
+		}
+
+	}
+
 	return word_result, nil
 }
 

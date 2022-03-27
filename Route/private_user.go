@@ -177,10 +177,9 @@ func User_fadan(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	result, err := Data.Data_oneself_receive_tasks(user.Id)
+	result, err := Data.Data_oneself_publish_tasks(user.Id)
 	if err != nil {
 		utils.Get_response_json(1, err.Error())
-		return
 	}
 
 	json := gjson.New(nil)
@@ -194,9 +193,10 @@ func User_jiedan(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	result, err := Data.Data_oneself_publish_tasks(user.Id)
+	result, err := Data.Data_oneself_receive_tasks(user.Id)
 	if err != nil {
 		utils.Get_response_json(1, err.Error())
+		return
 	}
 
 	json := gjson.New(nil)
