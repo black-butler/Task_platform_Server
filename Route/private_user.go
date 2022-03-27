@@ -50,6 +50,8 @@ func init() {
 	group.POST("/apply_for_withdraw_deposit", apply_for_withdraw_deposit)
 	//用户提现记录
 	group.POST("/withdraw_deposit_record", withdraw_deposit_record)
+	//绑定支付宝
+	group.POST("/bound_alipay_number", bound_alipay_number)
 	//退出登录
 	group.POST("/log_out", log_out)
 }
@@ -398,6 +400,26 @@ func withdraw_deposit_record(r *ghttp.Request) {
 	}
 
 	r.Response.WriteJson(result)
+}
+
+//绑定支付宝
+func bound_alipay_number(r *ghttp.Request) {
+	session_user := r.Session.Get(Config.Session_user)
+	user := session_user.(*Bean.User)
+
+	alipay_number := r.GetString("alipay_number")
+	alipay_name := r.GetString("alipay_name")
+
+	err := Data.Data_update_user_alipay(user.Id, alipay_number, alipay_name)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "绑定支付宝失败"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", "绑定支付宝成功")
+	r.Response.WriteJson(json)
 }
 
 //登出

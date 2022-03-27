@@ -35,6 +35,16 @@ func Data_Add_user(number string, password string) error {
 	return nil
 }
 
+//更新用户支付宝账户和名字
+func Data_update_user_alipay(userid int, alipay_number string, alipay_name string) error {
+	_, err := g.DB().Model("users").Data(g.Map{"alipay_number": alipay_number, "alipay_name": alipay_name}).Where("id", userid).Update()
+	if err != nil {
+		log.Sql_log().Println("更新用户支付宝账户和名字错误:", err.Error())
+		return err
+	}
+	return nil
+}
+
 //查找用户 通过用户账号密码
 func Data_Get_user(number string, password string) (*Bean.User, error) {
 	user := new(Bean.User)
