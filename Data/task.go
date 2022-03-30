@@ -156,7 +156,7 @@ func Data_update_task_status(taskid int, status int) error {
 func Data_update_work_status(work *Bean.Work_order, status int) error {
 	_, err := g.DB().Model("work_order").Data(g.Map{"status": status}).Where("id", work.Id).Update()
 	if err != nil {
-		log.Sql_log().Line().Println("添加用户余额失败", err.Error())
+		log.Sql_log().Line().Println("更新work接单状态", err.Error())
 		return errors.New("更新接单状态失败")
 	}
 	return nil

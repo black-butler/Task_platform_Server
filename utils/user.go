@@ -16,7 +16,7 @@ func init() {
 	User_Suo = gcache.New()
 }
 
-//获取某个任务的锁
+//获取某个用户的锁
 func Get_user_suo(userid int) (*sync.Mutex, error) {
 	Cache_User_mutux.Lock()
 	defer Cache_User_mutux.Unlock()

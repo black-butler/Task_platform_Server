@@ -62,8 +62,14 @@ func UserInfo(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
+		return
+	}
+
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	Data.Data_refre_userid(user)
 

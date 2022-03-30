@@ -32,3 +32,7 @@ func File_gcache_log() *glog.Logger {
 func File_timed_log() *glog.Logger {
 	return g.Log("File_timed").File("定时任务日志-{Ymd}.log")
 }
+
+func File_core_log() *glog.Logger {
+	return g.Log("File_core_log").File("业务核心逻辑日志-{Ymd}.log").Line()
+}

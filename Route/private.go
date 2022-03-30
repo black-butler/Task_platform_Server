@@ -185,8 +185,13 @@ func submit(r *ghttp.Request) {
 		return
 	}
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	//刷新
 	Data.Data_refre_userid(user)
@@ -249,8 +254,13 @@ func receive_task(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	taskid := r.GetInt("taskid")
 	task, err := Data.Data_Get_task_id(taskid)
@@ -337,8 +347,14 @@ func soldTask(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
+		return
+	}
+
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	taskid := r.GetInt("taskid")
 	task, err := Data.Data_Get_task_id(taskid)
@@ -464,8 +480,13 @@ func subdatum(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁失败"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	//校验图片
 	imgs := strings.Split(img, ",")
@@ -536,8 +557,14 @@ func notarize(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁失败"))
+		return
+	}
+
+	user_suo.Lock()
+	defer user_suo.Unlock()
 
 	//判断该工单是不是自己的工单
 	if user.Id != work.Task_userid {
@@ -550,9 +577,18 @@ func notarize(r *ghttp.Request) {
 		return
 	}
 
+	//更新工单状态已完成
+	err = Data.Data_update_work_status(work, constant.Yiwancheng)
+	if err != nil {
+		log.File_core_log().Println("更新工单状态已完成失败,数据库错误,更新用户:", user.Id, "更新工单id", work.Id)
+		r.Response.WriteJson(utils.Get_response_json(1, "更新状态失败"))
+		return
+	}
+
 	//扣除用户冻结余额
 	err = Data.Data_delete_user_freeze_money(work.Task.User, work.Task.One_money)
 	if err != nil {
+		log.File_core_log().Println("更新工单状态已完成失败,扣除用户冻结余额数据库错误,更新用户:", user.Id, "更新工单id", work.Id)
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
 		return
 	}
@@ -560,6 +596,7 @@ func notarize(r *ghttp.Request) {
 	//添加接任务用户余额
 	err = Data.Data_add_user_money(work.User, work.Task.One_money)
 	if err != nil {
+		log.File_core_log().Println("更新工单状态已完成失败,添加接任务用户余额数据库错误,更新用户:", user.Id, "更新工单id", work.Id)
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
 		return
 	}
@@ -567,6 +604,7 @@ func notarize(r *ghttp.Request) {
 	//扣除任务剩余冻结余额
 	err = Data.Data_delete_task_freeze_money(work.Task, work.Task.One_money)
 	if err != nil {
+		log.File_core_log().Println("更新工单状态已完成失败,扣除任务剩余冻结余额数据库错误,更新用户:", user.Id, "更新工单id", work.Id)
 		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
 		return
 	}
