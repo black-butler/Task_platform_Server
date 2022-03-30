@@ -146,6 +146,14 @@ func submit(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
+	user_suo, err := utils.Get_user_suo(user.Id)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
+		return
+	}
+	user_suo.Lock()
+	defer user_suo.Unlock()
+
 	title := r.GetString("title")        //任务标题
 	TaskCount := r.GetInt("TaskCount")   //任务数量
 	price := r.GetInt("price")           //任务单价
@@ -184,14 +192,6 @@ func submit(r *ghttp.Request) {
 		r.Response.WriteJson(utils.Get_response_json(1, "任务需要提交的资料不能小于10大于1000"))
 		return
 	}
-
-	user_suo, err := utils.Get_user_suo(user.Id)
-	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, "获取用户锁错误"))
-		return
-	}
-	user_suo.Lock()
-	defer user_suo.Unlock()
 
 	//刷新
 	Data.Data_refre_userid(user)
@@ -547,13 +547,6 @@ k:
 
 //确认完成
 func notarize(r *ghttp.Request) {
-	workid := r.GetInt("wordid") //工单id
-	work, err := Data.Data_get_Work_orderid(workid)
-	if err != nil {
-		r.Response.WriteJson(utils.Get_response_json(1, "获取工单失败"))
-		return
-	}
-
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
 
@@ -565,6 +558,13 @@ func notarize(r *ghttp.Request) {
 
 	user_suo.Lock()
 	defer user_suo.Unlock()
+
+	workid := r.GetInt("wordid") //工单id
+	work, err := Data.Data_get_Work_orderid(workid)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "获取工单失败"))
+		return
+	}
 
 	//判断该工单是不是自己的工单
 	if user.Id != work.Task_userid {
