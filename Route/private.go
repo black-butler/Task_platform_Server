@@ -184,8 +184,8 @@ func submit(r *ghttp.Request) {
 		r.Response.WriteJson(utils.Get_response_json(1, "时间错误"))
 		return
 	}
-	if utf8.RuneCountInString(body) <= 10 || utf8.RuneCountInString(body) > 1000 {
-		r.Response.WriteJson(utils.Get_response_json(1, "任务流程不能小于10大于1000"))
+	if utf8.RuneCountInString(body) <= 2 || utf8.RuneCountInString(body) > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务流程不能小于3大于1000"))
 		return
 	}
 	if utf8.RuneCountInString(proof) <= 10 || utf8.RuneCountInString(proof) > 1000 {
@@ -472,8 +472,8 @@ func subdatum(r *ghttp.Request) {
 	img := r.GetString("imgs")
 	wordid := r.GetInt("wordid")
 
-	if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 1000 {
-		r.Response.WriteJson(utils.Get_response_json(1, "任务提交的文字资料不能小于10大于1000"))
+	if utf8.RuneCountInString(body) <= 2 || utf8.RuneCountInString(body) > 1000 {
+		r.Response.WriteJson(utils.Get_response_json(1, "任务提交的文字资料不能小于3大于1000"))
 		return
 	}
 
