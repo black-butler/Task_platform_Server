@@ -10,4 +10,5 @@ type User struct {
 	Alipay_number string //绑定的支付宝账户
 	Alipay_name   string //绑定的支付宝账户姓名
 	Admin         int    //0不是管理员 1是管理员
+	Black         int    //0不是黑名单 1是黑名单
 }

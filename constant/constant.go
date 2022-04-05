@@ -17,3 +17,9 @@ const (
 	Chaoshi     = 3 //超时
 	Word_XiaJIa = 4 //下架
 )
+
+//提现状态
+const (
+	TiXian_weiwancheng = 0 //提现未完成
+	Tixian_yiwancheng  = 1 //提现已完成
+)

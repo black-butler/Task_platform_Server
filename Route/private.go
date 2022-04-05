@@ -28,6 +28,8 @@ func init() {
 
 	//首页内容
 	group.POST("/announcement", announcement)
+	//首页任务
+	group.POST("/Home_task_list", Home_task_list)
 	//任务列表
 	group.POST("/order_list", order_list)
 	//任务详情页
@@ -61,6 +63,20 @@ func announcement(r *ghttp.Request) {
 	json := gjson.New(nil)
 	json.Set("lunbo_imgs", lunbo_imgs)
 	json.Set("gonggao", gonggao)
+	r.Response.WriteJson(json)
+}
+
+//首页任务列表
+func Home_task_list(r *ghttp.Request) {
+	result, err := Data.Data_get_shouye_all_task()
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, err.Error()))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", "0")
+	json.Set("body", result)
 	r.Response.WriteJson(json)
 }
 
@@ -145,6 +161,11 @@ func detail(r *ghttp.Request) {
 func submit(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
+
+	if user.Black == 1 { //黑名单用户
+		r.Response.WriteJson(utils.Get_response_json(1, "黑名单操作失败"))
+		return
+	}
 
 	user_suo, err := utils.Get_user_suo(user.Id)
 	if err != nil {
@@ -253,6 +274,11 @@ k:
 func receive_task(r *ghttp.Request) {
 	session_user := r.Session.Get(Config.Session_user)
 	user := session_user.(*Bean.User)
+
+	if user.Black == 1 { //黑名单用户
+		r.Response.WriteJson(utils.Get_response_json(1, "黑名单操作失败"))
+		return
+	}
 
 	user_suo, err := utils.Get_user_suo(user.Id)
 	if err != nil {

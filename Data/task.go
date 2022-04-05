@@ -22,10 +22,10 @@ func Data_add_task(user *Bean.User, title string, body string, audit string, img
 	return id, nil
 }
 
-//根据id获取正常任务
+//根据id获取任务
 func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 	task := new(Bean.Task)
-	err := g.DB().Model("tasks").Where("id", taskid).Where("status", constant.Zhengchang).Struct(task)
+	err := g.DB().Model("tasks").Where("id", taskid).Struct(task)
 	if err != nil {
 		log.Sql_log().Line().Println("根据id获取某个任务", err.Error())
 		return nil, errors.New("根据id获取某个任务")
@@ -39,6 +39,16 @@ func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 	task.User = user
 
 	return task, nil
+}
+
+//根据id获取所有类型的任务
+func Data_Get_task_id_all_type(taskid int) (gdb.Record, error) {
+	result, err := g.DB().Model("tasks").Where("id", taskid).One()
+	if err != nil {
+		log.Sql_log().Line().Println("根据id获取所有类型的任务", err.Error())
+		return nil, errors.New("根据id获取所有类型的任务")
+	}
+	return result, nil
 }
 
 //添加任务接单记录
@@ -97,6 +107,23 @@ func Data_get_all_task() (gdb.Result, error) {
 	if err != nil {
 		log.Sql_log().Line().Println("获取当前所有任务", err.Error())
 		return nil, errors.New("获取推荐任务失败")
+	}
+	return result, nil
+}
+
+//获取首页任务
+func Data_get_shouye_all_task() (gdb.Result, error) {
+	record, err := g.DB().Model("home_data").One()
+	if err != nil {
+		log.Sql_log().Line().Println("获取首页任务", err.Error())
+		return nil, errors.New("获取首页任务")
+	}
+	ids := record["shouyetask"].String()
+
+	result, err := g.DB().Model("tasks").Where("status", constant.Zhengchang).WhereIn("id", ids).All()
+	if err != nil {
+		log.Sql_log().Line().Println("获取首页任务", err.Error())
+		return nil, errors.New("获取首页任务")
 	}
 	return result, nil
 }

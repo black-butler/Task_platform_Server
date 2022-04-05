@@ -20,3 +20,13 @@ func Data_Get_home() (string, string, error) {
 
 	return result["lunbo_imgs"].String(), result["gonggao"].String(), nil
 }
+
+//更换首页轮播图
+func Data_update_home_lun_img(zhi string) error {
+	_, err := g.DB().Model("home_data").Data(g.Map{"lunbo_imgs": zhi}).Where("id", "1").Update()
+	if err != nil {
+		log.Sql_log().Line().Println("更换首页轮播图失败", err.Error())
+		return errors.New("更换首页轮播图失败")
+	}
+	return nil
+}

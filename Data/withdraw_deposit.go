@@ -3,6 +3,7 @@ package Data
 import (
 	"github.com/gogf/gf/database/gdb"
 	"github.com/gogf/gf/frame/g"
+	"platform/constant"
 	"platform/log"
 	"platform/utils"
 	"time"
@@ -30,6 +31,16 @@ func Data_withdraw_deposit_record(userid int) (gdb.Result, error) {
 	result, err := g.DB().Model("withdraw_deposit").Where("userid", userid).All()
 	if err != nil {
 		log.Sql_log().Println("提现记录错误" + err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
+//申请提现列表
+func Data_withdraw_deposit_apply_for() (gdb.Result, error) {
+	result, err := g.DB().Model("withdraw_deposit").Where("status", constant.TiXian_weiwancheng).All()
+	if err != nil {
+		log.Sql_log().Println("申请提现列表错误" + err.Error())
 		return nil, err
 	}
 	return result, nil
