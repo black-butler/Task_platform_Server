@@ -36,3 +36,7 @@ func File_timed_log() *glog.Logger {
 func File_core_log() *glog.Logger {
 	return g.Log("File_core_log").File("业务核心逻辑日志-{Ymd}.log").Line()
 }
+
+func File_admin_log() *glog.Logger {
+	return g.Log("File_admin_log").File("管理员操作日志-{Ymd}.log").Line()
+}

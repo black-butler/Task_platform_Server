@@ -339,6 +339,11 @@ func receive_task(r *ghttp.Request) {
 
 	Set_weidu(word_task, user)
 
+	//判断任务剩余数量
+	if count+1 >= task.Sum {
+		Data.Data_update_task_status(task.Id, constant.Xiajia)
+	}
+
 	r.Response.WriteJson(utils.Get_response_json(0, "接任务成功，请在指定时间内完成"))
 }
 

@@ -22,10 +22,10 @@ func Data_add_task(user *Bean.User, title string, body string, audit string, img
 	return id, nil
 }
 
-//根据id获取某个任务 所有任务
+//根据id获取正常任务
 func Data_Get_task_id(taskid int) (*Bean.Task, error) {
 	task := new(Bean.Task)
-	err := g.DB().Model("tasks").Where("id", taskid).Struct(task)
+	err := g.DB().Model("tasks").Where("id", taskid).Where("status", constant.Zhengchang).Struct(task)
 	if err != nil {
 		log.Sql_log().Line().Println("根据id获取某个任务", err.Error())
 		return nil, errors.New("根据id获取某个任务")
@@ -97,6 +97,16 @@ func Data_get_all_task() (gdb.Result, error) {
 	if err != nil {
 		log.Sql_log().Line().Println("获取当前所有任务", err.Error())
 		return nil, errors.New("获取推荐任务失败")
+	}
+	return result, nil
+}
+
+//获取当前所有未审核任务
+func Data_get_all_unreviewed_task() (gdb.Result, error) {
+	result, err := g.DB().Model("tasks").Where("status", constant.Weishenhe).All()
+	if err != nil {
+		log.Sql_log().Line().Println("获取当前所有未审核任务", err.Error())
+		return nil, errors.New("获取当前所有未审核任务")
 	}
 	return result, nil
 }

@@ -4,11 +4,13 @@ package constant
 const (
 	Zhengchang = 0 //正常
 	Xiajia     = 1 //下架
+	Weishenhe  = 2 //未审核
+	Butongguo  = 3 //审核不通过
 )
 
 var Task_status_map = map[int]string{Zhengchang: "正常", Xiajia: "下架"}
 
-//接单状态
+//工单状态
 const (
 	Weiwancheng = 0 //未完成
 	Yiwancheng  = 1 //已完成并打款
