@@ -3,6 +3,7 @@ package Tripartite_api
 import (
 	"errors"
 	"fmt"
+	"github.com/gogf/gf/util/grand"
 	"github.com/smartwalle/alipay/v3"
 	"platform/utils"
 )
@@ -27,4 +28,21 @@ func Alipay_Order_payment_status(commercial_tenant_id string) (bool, error) {
 	}
 }
 
-//
+//用户提现
+func Alipay_transfer_accounts(alipay_number, alipay_name, money string) (bool, error) {
+
+	var p = alipay.FundTransToAccountTransfer{}
+	p.OutBizNo = grand.S(15)
+	p.PayeeType = "ALIPAY_LOGONID"
+	p.PayeeAccount = alipay_number
+	p.Amount = money
+	p.PayeeRealName = alipay_name
+	p.Remark = "提现到账"
+
+	zhi, err := utils.Client.FundTransToAccountTransfer(p)
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(zhi)
+	return true, nil
+}

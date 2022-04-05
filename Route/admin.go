@@ -23,6 +23,7 @@ func init() {
 	group.POST("/unreviewed_task", unreviewed_task)             //审核单子
 	group.POST("/update_lun_img", update_lun_img)               //更换轮播图
 	group.POST("/withdraw_deposit_list", withdraw_deposit_list) //申请提现列表
+	group.POST("/tixain", tixain)                               //处理提现
 }
 
 //获取未审核单子
@@ -101,4 +102,17 @@ func withdraw_deposit_list(r *ghttp.Request) {
 }
 
 //处理提现
-//func
+func tixain(r *ghttp.Request) {
+	id := r.GetInt("id")
+
+	err := Data.Data_update_deposit_apply_status(id, constant.Tixian_yiwancheng)
+	if err != nil {
+		r.Response.WriteJson(utils.Get_response_json(1, "提现失败，数据库错误"))
+		return
+	}
+
+	json := gjson.New(nil)
+	json.Set("code", 0)
+	json.Set("body", "操作成功")
+	r.Response.WriteJson(json)
+}

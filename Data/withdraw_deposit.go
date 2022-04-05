@@ -45,3 +45,21 @@ func Data_withdraw_deposit_apply_for() (gdb.Result, error) {
 	}
 	return result, nil
 }
+
+//获取某个id的提现记录
+//func Data_id_withdraw_deposit(id int)(gdb.Record,error){
+//
+//	record,err :=
+//
+//
+//}
+
+//更改某个id的提现状态
+func Data_update_deposit_apply_status(id int, status int) error {
+	_, err := g.DB().Model("withdraw_deposit").Data(g.Map{"status": status}).Where("id", id).Update()
+	if err != nil {
+		log.Sql_log().Println("更改某个id的提现状态错误" + err.Error())
+		return err
+	}
+	return nil
+}
